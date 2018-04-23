@@ -33,12 +33,27 @@
     <ClInclude Include="..\..\Network\Socket\Session.h">
       <Filter>源文件\Socket</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Network\Common\Common.h">
+      <Filter>源文件\Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Network\Socket\Client.h">
+      <Filter>源文件\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Network\Socket\SocketMgr.h">
+      <Filter>源文件\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Network\Socket\AsyncAcceptor.h">
+      <Filter>源文件\Socket</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Network\Socket\WorldSocket.cpp">
       <Filter>源文件\Socket</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Network\Socket\Session.cpp">
+      <Filter>源文件\Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Network\Socket\Client.cpp">
       <Filter>源文件\Socket</Filter>
     </ClCompile>
   </ItemGroup>

@@ -4,14 +4,16 @@
 
 using boost::asio::ip::tcp;
 
-WorldSocket::WorldSocket(tcp::socket&& socket)
-	: Socket(std::move(socket)), _authSeed(0), _OverSpeedPings(0), _session(nullptr), _authed(false), _sendBufferSize(4096)
+WorldSocket::WorldSocket(tcp::socket* socket)
+	: Socket(socket), _authSeed(0), _OverSpeedPings(0), _session(nullptr), _authed(false), _sendBufferSize(4096)
 {
 	//_headerBuffer.Resize(sizeof(ClientPktHeader));
 }
 
 void WorldSocket::Start()
 {
+	_remoteAddress = _socket->remote_endpoint().address();
+	_remotePort = _socket->remote_endpoint().port();
 	std::string ip_address = GetRemoteIpAddress().to_string();
 	//_queryProcessor.AddQuery(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::CheckIpCallback, this, std::placeholders::_1)));
 }

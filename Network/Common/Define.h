@@ -169,11 +169,12 @@ typedef uint8_t uint8;
 #define ABORT WPAbort
 */
 
+/*
 #if (defined(WIN32) || defined(_WIN32) || defined(__WIN32__))
 struct tm* localtime_r(time_t const* time, struct tm *result)
 {
 	localtime_s(result, time);
 	return result;
 }
-#endif
+#endif*/
 #endif //TRINITY_DEFINE_H

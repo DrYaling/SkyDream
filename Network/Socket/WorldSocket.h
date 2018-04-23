@@ -23,7 +23,7 @@ class WorldSocket : public Socket<WorldSocket>
 	typedef Socket<WorldSocket> BaseSocket;
 
 public:
-	WorldSocket(tcp::socket&& socket);
+	WorldSocket(tcp::socket* socket);
 
 	WorldSocket(WorldSocket const& right) = delete;
 	WorldSocket& operator=(WorldSocket const& right) = delete;
@@ -31,7 +31,7 @@ public:
 	void Start() override;
 	bool Update() override;
 
-	void SendPacket(const char*  packet,size_t size);
+	void SendPacket(const char*  packet, size_t size);
 
 	void SetSendBufferSize(std::size_t sendBufferSize) { _sendBufferSize = sendBufferSize; }
 
@@ -50,7 +50,6 @@ protected:
 	ReadDataHandlerResult ReadDataHandler();
 	void WritePacketToBuffer(EncryptablePacket const& packet, MessageBuffer& buffer);
 
-	
 private:
 
 	uint32 _authSeed;

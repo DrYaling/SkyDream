@@ -14,6 +14,8 @@ created by zxb @2018-4-19
 #include <type_traits>
 #include <boost/asio/ip/tcp.hpp>
 #include <mutex>
+#include <boost/bind.hpp>
+#include <iostream>
 using boost::asio::ip::tcp;
 
 #define READ_BLOCK_SIZE 4096
@@ -35,17 +37,15 @@ template<class T>
 class Socket : public std::enable_shared_from_this<T>
 {
 public:
-	explicit Socket(tcp::socket&& socket) : _socket(std::move(socket)), _remoteAddress(_socket.remote_endpoint().address()),
-		_remotePort(_socket.remote_endpoint().port()), _readBuffer(), _closed(false), _closing(false), _isWritingAsync(false)
+	explicit Socket(tcp::socket* socket) : _socket(socket), _readBuffer(), _closed(false), _closing(false), _isWritingAsync(false)
 	{
 		_readBuffer.Resize(READ_BLOCK_SIZE);
 	}
-
 	virtual ~Socket()
 	{
 		_closed = true;
 		boost::system::error_code error;
-		_socket.close(error);
+		_socket->close(error);
 	}
 
 	virtual void Start() = 0;
@@ -83,7 +83,7 @@ public:
 
 		_readBuffer.Normalize();
 		_readBuffer.EnsureFreeSpace();
-		_socket.async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
+		_socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
 			std::bind(&Socket<T>::ReadHandlerInternal, this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 	}
 
@@ -94,7 +94,7 @@ public:
 
 		_readBuffer.Normalize();
 		_readBuffer.EnsureFreeSpace();
-		_socket.async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
+		_socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
 			std::bind(callback, this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 	}
 
@@ -115,7 +115,7 @@ public:
 			return;
 
 		boost::system::error_code shutdownError;
-		_socket.shutdown(boost::asio::socket_base::shutdown_send, shutdownError);
+		_socket->shutdown(boost::asio::socket_base::shutdown_send, shutdownError);
 		if (shutdownError)
 			;// SD_LOG_DEBUG("network", "Socket::CloseSocket: %s errored when shutting down socket: %i (%s)", GetRemoteIpAddress().to_string().c_str(),
 			//	shutdownError.value(), shutdownError.message().c_str());
@@ -132,7 +132,6 @@ protected:
 	virtual void OnClose() { }
 
 	virtual void ReadHandler() = 0;
-
 	bool AsyncProcessQueue()
 	{
 		if (_isWritingAsync)
@@ -142,7 +141,7 @@ protected:
 
 #ifdef SD_SOCKET_USE_IOCP
 		MessageBuffer& buffer = _writeQueue.front();
-		_socket.async_write_some(boost::asio::buffer(buffer.GetReadPointer(), buffer.GetActiveSize()), std::bind(&Socket<T>::WriteHandler,
+		_socket->async_write_some(boost::asio::buffer(buffer.GetReadPointer(), buffer.GetActiveSize()), std::bind(&Socket<T>::WriteHandler,
 			this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 #else
 		_socket.async_write_some(boost::asio::null_buffers(), std::bind(&Socket<T>::WriteHandlerWrapper,
@@ -155,11 +154,15 @@ protected:
 	void SetNoDelay(bool enable)
 	{
 		boost::system::error_code err;
-		_socket.set_option(tcp::no_delay(enable), err);
+		_socket->set_option(tcp::no_delay(enable), err);
 		//if (err)
 		//	SD_LOG_DEBUG("network", "Socket::SetNoDelay: failed to set_option(boost::asio::ip::tcp::no_delay) for %s - %d (%s)",
 		//		GetRemoteIpAddress().to_string().c_str(), err.value(), err.message().c_str());
 	}
+	boost::asio::ip::address _remoteAddress;
+	uint16 _remotePort;
+	std::shared_ptr<tcp::socket> _socket;
+
 
 private:
 	void ReadHandlerInternal(boost::system::error_code error, size_t transferredBytes)
@@ -245,17 +248,13 @@ private:
 
 #endif
 
-	tcp::socket _socket;
-
-	boost::asio::ip::address _remoteAddress;
-	uint16 _remotePort;
 
 	MessageBuffer _readBuffer;
 	std::queue<MessageBuffer> _writeQueue;
 
 	std::atomic<bool> _closed;
 	std::atomic<bool> _closing;
-
+	
 	bool _isWritingAsync;
 };
 
