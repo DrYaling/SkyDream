@@ -2,11 +2,11 @@
 created by zxb @2018-4-19
 */
 
-#ifndef __SOCKET_H__
-#define __SOCKET_H__
+#ifndef __TCP_SOCKET_H__
+#define __TCP_SOCKET_H__
 
 #include "../Common/MessageBuffer.h"
-//#include "../Logging/Log.h"
+#include "Common/Common.h"
 #include <atomic>
 #include <queue>
 #include <memory>
@@ -18,38 +18,25 @@ created by zxb @2018-4-19
 #include <iostream>
 using boost::asio::ip::tcp;
 
-#define READ_BLOCK_SIZE 4096
-#ifdef BOOST_ASIO_HAS_IOCP
-#define SD_SOCKET_USE_IOCP
-#endif
-struct PacketHeader
-{
-	uint32 Size;
-	uint16 Command;
-
-	bool IsValidSize() { return Size < 0x10000; }
-	bool IsValidOpcode()
-	{
-		return Command < 1024;
-	}
-};
-enum class ReadDataHandlerResult
-{
-	Ok = 0,
-	Error = 1,
-	WaitingForQuery = 2
-};
 template<class T>
-class Socket : public std::enable_shared_from_this<T>
+class TCPSocket : public std::enable_shared_from_this<T>
 {
 
 public:
 	std::string name;
-	explicit Socket(tcp::socket* socket) : _socket(socket), _readBuffer(), _closed(false), _closing(false), _isWritingAsync(false), _sendLock(),_receiveLock(),name()
+	explicit TCPSocket(tcp::socket* socket) :
+		_socket(socket),
+		_readBuffer(),
+		_closed(false),
+		_closing(false),
+		_isWritingAsync(false),
+		_sendLock(),
+		_receiveLock(),
+		name()
 	{
 		_readBuffer.Resize(READ_BLOCK_SIZE);
 	}
-	virtual ~Socket()
+	virtual ~TCPSocket()
 	{
 		_closed = true;
 		boost::system::error_code error;
@@ -76,7 +63,7 @@ public:
 
 	boost::asio::ip::address GetRemoteIpAddress() const
 	{
-		return _remoteAddress;
+		return _remoteEndpoint;
 	}
 
 	uint16 GetRemotePort() const
@@ -84,6 +71,7 @@ public:
 		return _remotePort;
 	}
 
+	int32 GetClientId() const { return _clientId; }
 	void AsyncRead()
 	{
 		if (!IsOpen())
@@ -92,7 +80,7 @@ public:
 		_readBuffer.Normalize();
 		_readBuffer.EnsureFreeSpace();
 		_socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
-			std::bind(&Socket<T>::ReadHandlerInternal, this, std::placeholders::_1, std::placeholders::_2));
+			std::bind(&TCPSocket<T>::ReadHandlerInternal, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 	void AsyncReadWithCallback(void (T::*callback)(boost::system::error_code, std::size_t))
@@ -128,7 +116,7 @@ public:
 		boost::system::error_code shutdownError;
 		_socket->shutdown(boost::asio::socket_base::shutdown_send, shutdownError);
 		if (shutdownError)
-			std::cout << "shutdown socket fail " << shutdownError.message() << std::endl;// SD_LOG_DEBUG("network", "Socket::CloseSocket: %s errored when shutting down socket: %i (%s)", GetRemoteIpAddress().to_string().c_str(),
+			std::cout << "shutdown socket fail " << shutdownError.message() << std::endl;// SD_LOG_DEBUG("network", "TCPSocket::CloseSocket: %s errored when shutting down socket: %i (%s)", GetRemoteIpAddress().to_string().c_str(),
 			//	shutdownError.value(), shutdownError.message().c_str());
 
 		OnClose();
@@ -152,10 +140,10 @@ protected:
 
 #ifdef SD_SOCKET_USE_IOCP
 		MessageBuffer& buffer = _writeQueue.front();
-		_socket->async_write_some(boost::asio::buffer(buffer.GetReadPointer(), buffer.GetActiveSize()), std::bind(&Socket<T>::WriteHandler,
+		_socket->async_write_some(boost::asio::buffer(buffer.GetReadPointer(), buffer.GetActiveSize()), std::bind(&TCPSocket<T>::WriteHandler,
 			this, std::placeholders::_1, std::placeholders::_2));
 #else
-		_socket.async_write_some(boost::asio::null_buffers(), std::bind(&Socket<T>::WriteHandlerWrapper,
+		_socket.async_write_some(boost::asio::null_buffers(), std::bind(&TCPSocket<T>::WriteHandlerWrapper,
 			this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
 #endif
 
@@ -167,10 +155,10 @@ protected:
 		boost::system::error_code err;
 		_socket->set_option(tcp::no_delay(enable), err);
 		//if (err)
-		//	SD_LOG_DEBUG("network", "Socket::SetNoDelay: failed to set_option(boost::asio::ip::tcp::no_delay) for %s - %d (%s)",
+		//	SD_LOG_DEBUG("network", "TCPSocket::SetNoDelay: failed to set_option(boost::asio::ip::tcp::no_delay) for %s - %d (%s)",
 		//		GetRemoteIpAddress().to_string().c_str(), err.value(), err.message().c_str());
 	}
-	boost::asio::ip::address _remoteAddress;
+	boost::asio::ip::address _remoteEndpoint;
 	uint16 _remotePort;
 	std::shared_ptr<tcp::socket> _socket;
 	std::mutex _sendLock;
@@ -262,15 +250,14 @@ private:
 	}
 
 #endif
-
-
 	MessageBuffer _readBuffer;
 	std::queue<MessageBuffer> _writeQueue;
 
 	std::atomic<bool> _closed;
 	std::atomic<bool> _closing;
-	
 	bool _isWritingAsync;
+protected:
+	int32 _clientId;
 };
 
 #endif // __SOCKET_H__

@@ -9,6 +9,7 @@
 #include "Socket/Client.h"
 #include "Socket/WorldSocketMgr.h"
 #include "Socket/AsyncAcceptor.h"
+#include "Socket/ClientSocketMgr.h"
 //p2p连接
 std::vector<WorldSocket*> _p2pConnections;
 static void OnSocketAccept(tcp::socket* sock)
@@ -22,17 +23,15 @@ void ThreadAccepter()
 {
 	_p2pConnections.clear();
 	//创建客户端监听
-	tcp::socket * sock = sWorldSocketMgr->GetSocket();
-	AsyncAcceptor* _acceptor = new AsyncAcceptor(sock, "127.0.0.1", 18082);
-	_acceptor->Bind();
-	_acceptor->AsyncAcceptWithCallback<&OnSocketAccept>();
+	tcp::socket * sock = sClientSocketMgr->GetSocket();
 	//创建客户端连接
 	auto client = new  ClientSocket(sock);
 	client->name = std::move("native client");
-	client->Bind("127.0.0.1", 18082);
+	//client->Bind("127.0.0.1", 18082);
 	Sleep(500);
 	//client->Start("118.113.200.77", 8081);
 	client->Start("127.0.0.1", 8081);
+	sClientSocketMgr->client = client;
 	while (1)
 	{
 		for (auto s : _p2pConnections)

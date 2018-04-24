@@ -72,7 +72,7 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
@@ -84,7 +84,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>false</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
@@ -96,7 +96,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -114,7 +114,7 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>TurnOffAllWarnings</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
@@ -135,15 +135,21 @@
     <ClInclude Include="..\..\Network\Socket\AsyncAcceptor.h" />
     <ClInclude Include="..\..\Network\Socket\Client.h" />
     <ClInclude Include="..\..\Network\Socket\ClientSocketMgr.h" />
+    <ClInclude Include="..\..\Network\Socket\Opcode\Opcode.h" />
     <ClInclude Include="..\..\Network\Socket\Session.h" />
-    <ClInclude Include="..\..\Network\Socket\Socket.h" />
+    <ClInclude Include="..\..\Network\Socket\TCPSocket.h" />
     <ClInclude Include="..\..\Network\Socket\SocketMgr.h" />
+    <ClInclude Include="..\..\Network\Socket\UdpSocketClient.h" />
+    <ClInclude Include="..\..\Network\Socket\UdpSocketServer.h" />
     <ClInclude Include="..\..\Network\Socket\WorldSocket.h" />
     <ClInclude Include="..\..\Network\Socket\WorldSocketMgr.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Network\Socket\Client.cpp" />
     <ClCompile Include="..\..\Network\Socket\Session.cpp" />
+    <ClCompile Include="..\..\Network\Socket\UdpSocket.cpp" />
+    <ClCompile Include="..\..\Network\Socket\UdpSocketClient.cpp" />
+    <ClCompile Include="..\..\Network\Socket\UdpSocketServer.cpp" />
     <ClCompile Include="..\..\Network\Socket\WorldSocket.cpp" />
   </ItemGroup>
   <ItemGroup>

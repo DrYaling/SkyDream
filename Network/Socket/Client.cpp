@@ -1,11 +1,28 @@
 #include "Client.h"
 #include "proto/punch.pb.h"
 #include "ClientSocketMgr.h"
+#include "Opcode/Opcode.h"
 ClientSocket::ClientSocket(tcp::socket * socket)
-	:_io(&socket->get_io_service()), Socket(std::move(socket)), _sendBufferSize(4096), _clientId(0)
+	:_io(&socket->get_io_service()),
+	TCPSocket(std::move(socket)),
+	_c2sSocket(nullptr),
+	_c2cSocket(nullptr),
+	_sendBufferSize(4096),
+	_c2cClosed(true)
 {
-	_remoteAddress = boost::asio::ip::address::from_string("127.0.0.1");
+	_remoteEndpoint = boost::asio::ip::address::from_string("127.0.0.1");
 	_headerBuffer.Resize(sizeof(PacketHeader));
+}
+
+ClientSocket::~ClientSocket()
+{
+	if (nullptr != _c2cSocket)
+	{
+		if (_c2cSocket->IsOpen())
+			_c2cSocket->CloseSocket();
+		delete _c2cSocket;
+		_c2cSocket = nullptr;
+	}
 }
 
 void ClientSocket::Start(const char* url, uint16_t port)
@@ -13,9 +30,9 @@ void ClientSocket::Start(const char* url, uint16_t port)
 	//std::string ip_address = GetRemoteIpAddress().to_string();
 	SetNoDelay(true);
 	//_socket->non_blocking(true);
-	_remoteAddress = boost::asio::ip::address::from_string(url);
+	_remoteEndpoint = boost::asio::ip::address::from_string(url);
 	_remotePort = port;
-	auto ed = boost::asio::ip::tcp::endpoint(_remoteAddress, port);
+	auto ed = boost::asio::ip::tcp::endpoint(_remoteEndpoint, port);
 	_socket->async_connect(ed, boost::bind(&ClientSocket::AsyncConnectCallback, this, boost::asio::placeholders::error));
 }
 void ClientSocket::Start()
@@ -115,43 +132,44 @@ ReadDataHandlerResult ClientSocket::ReadDataHandler()
 	switch (header->Command)
 	{
 		//´ò¶´
-	case 1:
+	case S2C_Opcode::S2C_PUNCH:
 	{
-		SkyDream::Person remote;
+		SkyDream::IntValue remote;
 		remote.ParseFromArray(_packetBuffer.GetReadPointer(), _packetBuffer.GetActiveSize());
 
-		tcp::socket * sock = sClientSocketMgr->GetSocket();
-		ClientSocket* client = new ClientSocket(sock);
-		std::cout << "try connect to " << remote.ip() << ":" << remote.port() << std::endl;
-		client->name = std::move("remote client");
-		client->Start(remote.ip().c_str(), remote.port());
-		sClientSocketMgr->OnSocketConnect(client);
+		UdpSocketClient* client = new UdpSocketClient(_socket->get_io_service());
+		std::cout << "try connect to client " << remote.value() << std::endl;
+		client->name = std::move("native udp client");
+		client->Start(this->GetRemoteIpAddress(), this->GetRemotePort(), remote.value());
+		_c2sSocket = client;
 		break;
 	}
 	//list
-	case 2:
+	case S2C_Opcode::S2C_CLIST:
 	{
 		SkyDream::ListConn conn;
 		conn.ParseFromArray(_packetBuffer.GetReadPointer(), _packetBuffer.GetActiveSize());
+		std::cout << "list cient size " << conn.persons_size() << std::endl;
 		for (auto p : conn.persons())
 		{
+			std::cout << p.ip() << "\t" << p.port() << "\t" << p.clientid() << std::endl;
 			if (p.clientid() == _clientId)
 				continue;
-			std::cout << p.ip() << "\t" << p.port() << std::endl;
-			char data[1024] = { 0 };
-			size_t size = p.ByteSize();
-			p.SerializePartialToArray(data, size);
-			SendPacket(data, size, 1);
-			break;
+			UdpSocketClient* client = new UdpSocketClient(_socket->get_io_service());
+			std::cout << "try connect to client " << p.clientid() << std::endl;
+			client->name = std::move("native udp client");
+			client->Start(this->GetRemoteIpAddress(), this->GetRemotePort(), p.clientid());
+			_c2sSocket = client;
+			return ReadDataHandlerResult::Ok;
 		}
 		std::cout << "no other client connected to server " << std::endl;
 		Sleep(3000);
 		char data[] = { 0 };
 		size_t size = 0;
-		SendPacket(data, size, 2);
+		SendPacket(data, size, C2S_Opcode::C2S_CLIST);
 		break;
 	}
-	case 3:
+	case S2C_Opcode::S2C_CLIENT_ID:
 	{
 		SkyDream::IntValue iv;
 		iv.ParseFromArray(_packetBuffer.GetReadPointer(), _packetBuffer.GetActiveSize());
@@ -182,13 +200,24 @@ void ClientSocket::SendPacket(const char * packet, size_t size, int cmd)
 	MessageBuffer buffer(size + sizeof(header));
 	buffer.Write(&header, sizeof(header));
 	buffer.Write(packet, size);
-	std::cout << "ClientSocket SendPacket cmd " << cmd << ",pack size " << buffer.GetActiveSize() << ",real size " << size + sizeof(header) << std::endl;
+	//std::cout << "ClientSocket SendPacket cmd " << cmd << ",pack size " << buffer.GetActiveSize() << ",real size " << size + sizeof(header) << std::endl;
 	QueuePacket(std::move(buffer));
+}
+
+void ClientSocket::StartC2CConnection(const char * addr, uint16 port)
+{
+	if (nullptr == _c2sSocket)
+	{
+		return;
+		_c2sSocket = nullptr;
+	}
+	std::cout << "StartC2CConnection" << std::endl;
+	_c2sSocket->Start(addr, port);
 }
 
 void ClientSocket::AsyncConnectCallback(const boost::system::error_code & er)
 {
-	string connect_info = name+ "   connect ret :" + er.message() + "\n";
+	string connect_info = name + "   connect ret :" + er.message() + "\n";
 	std::cout << connect_info.c_str();
 	if (!er)
 	{
@@ -196,14 +225,17 @@ void ClientSocket::AsyncConnectCallback(const boost::system::error_code & er)
 		//SkyDream::Person* person = new SkyDream::Person();
 		//person->set_ip("221.10.7.226");
 		//person->set_port(34089);
-		char data[] = { 0 };
-		size_t size = 0;// person->ByteSize();
 		//person->SerializePartialToArray(data, size);
 		AsyncRead();
-		SendPacket(data, size, 2);
+		if (_clientId == 0)
+		{
+			char data[] = { 0 };
+			size_t size = 0;// person->ByteSize();
+			SendPacket(data, size, C2S_Opcode::C2S_CLIST);
+		}
 	}
 	else
 	{
-		sClientSocketMgr->OnConnectFail(this, _remoteAddress, _remotePort);
+		sClientSocketMgr->OnConnectFail(this, _remoteEndpoint, _remotePort);
 	}
 }

@@ -3,26 +3,34 @@
 #include <memory>
 #include "proto/punch.pb.h"
 #include "WorldSocketMgr.h"
+#include "Opcode/Opcode.h"
 using boost::asio::ip::tcp;
 
 WorldSocket::WorldSocket(tcp::socket* socket)
-	: Socket(socket), _authSeed(0), _OverSpeedPings(0), _session(nullptr), _authed(false), _sendBufferSize(4096)
+	: TCPSocket(socket), _OverSpeedPings(0), _session(nullptr), _authed(false), _sendBufferSize(4096)
 {
 	_headerBuffer.Resize(sizeof(PacketHeader));
 }
 static int clientId = 0;
+static std::mutex _clientIdMutex;
 void WorldSocket::Start()
 {
-	_remoteAddress = _socket->remote_endpoint().address();
+	_remoteEndpoint = _socket->remote_endpoint().address();
 	_remotePort = _socket->remote_endpoint().port();
 	std::string ip_address = GetRemoteIpAddress().to_string();
 	//发送客户端Id包
-	char data[50] = {  };
-	_authSeed = clientId++;
+	char data[50] = { 0 };
+	{
+		std::lock_guard<std::mutex> g(_clientIdMutex);
+		_clientId = clientId++;
+	}
 	SkyDream::IntValue iv;
-	iv.set_value(_authSeed);
-	auto size = iv.SerializeToArray(data, iv.ByteSize());
-	SendPacket(data, size, 3);
+	iv.set_value(_clientId);
+	auto size = iv.ByteSize();
+	iv.SerializeToArray(data, size);
+	SendPacket(data, size, S2C_Opcode::S2C_CLIENT_ID);
+	_udpSocket = new UdpSocketServer(_socket->get_io_service());
+	_udpSocket->Start(this->GetRemoteIpAddress(), this->GetRemotePort(), _clientId);
 	AsyncRead();
 	//_queryProcessor.AddQuery(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::CheckIpCallback, this, std::placeholders::_1)));
 }
@@ -195,57 +203,26 @@ ReadDataHandlerResult WorldSocket::ReadDataHandler()
 	std::cout << "read remote cmd " << header->Command << ",data size " << header->Size << std::endl;
 	switch (header->Command)
 	{
-		//打洞
-	case 1:
-	{
-		SkyDream::Person psn;
-		psn.ParseFromArray(_packetBuffer.GetReadPointer(), _packetBuffer.GetActiveSize());
-		auto connections = sWorldSocketMgr->GetConnections();
-		for (auto c : connections)
-		{
-			WorldSocket* w = dynamic_cast<WorldSocket*>(c);
-			if (w)
-			{
-				if (w->GetClientId() == psn.clientid())
-				{
-					std::cout << "client " << _authSeed << " connecting to " << psn.clientid() << std::endl;
-
-					char data[4096] = { 0 };
-					size_t size = psn.ByteSize();
-					psn.SerializePartialToArray(data, size);
-					//给当前连接的客户端发送一个确认包
-					SendPacket(data, size, 1);
-					psn.set_ip(_socket->remote_endpoint().address().to_string().c_str());
-					psn.set_port(GetRemotePort());
-					size = psn.ByteSize();
-					psn.SerializePartialToArray(data, size);
-					//通过和另一个客户端的连接给另一个客户端发送一个连接包
-					w->SendPacket(data, size, 1);
-					break;
-				}
-			}
-		}
-		break;
-	}
-	//list
-	case 2:
+		//list
+	case C2S_Opcode::C2S_CLIST:
 	{
 		auto connections = sWorldSocketMgr->GetConnections();
-		SkyDream::ListConn* conn = new SkyDream::ListConn();
+		SkyDream::ListConn conn;
 		for (auto c : connections)
 		{
 			WorldSocket* w = dynamic_cast<WorldSocket*>(c);
 			if (!w)
 				continue;
-			SkyDream::Person* person = conn->add_persons();
-			person->set_ip(c->GetRemoteIpAddress().to_string());
-			person->set_port(c->GetRemotePort());
+			SkyDream::Person* person = conn.add_persons();
+			person->set_ip(w->GetRemoteIpAddress().to_string());
+			person->set_port(w->GetRemotePort());
 			person->set_clientid(w->GetClientId());
+			std::cout << "connect client " << person->clientid() << std::endl;
 		}
 		char data[4096] = { 0 };
-		size_t size = conn->ByteSize();
-		conn->SerializePartialToArray(data, size);
-		SendPacket(data, size, 2);
+		size_t size = conn.ByteSize();
+		conn.SerializePartialToArray(data, size);
+		SendPacket(data, size, S2C_Opcode::S2C_CLIST);		
 		break;
 	}
 	default:
@@ -268,7 +245,7 @@ void WorldSocket::SendPacket(const char* packet, size_t size, int cmd)
 	MessageBuffer buffer(size + sizeof(header));
 	buffer.Write(&header, sizeof(header));
 	buffer.Write(packet, size);
-	std::cout << "WorldSocket SendPacket cmd " << cmd << ",pack size " << buffer.GetActiveSize() << ",real size " << size + sizeof(header) << std::endl;
+	//std::cout << "WorldSocket SendPacket cmd " << cmd << ",pack size " << buffer.GetActiveSize() << ",real size " << size + sizeof(header) << std::endl;
 	QueuePacket(std::move(buffer));
 	/*if (sPacketLog->CanLogPacket())
 		sPacketLog->LogPacket(packet, SERVER_TO_CLIENT, GetRemoteIpAddress(), GetRemotePort());

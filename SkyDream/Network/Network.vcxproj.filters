@@ -24,9 +24,6 @@
     </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Network\Socket\Socket.h">
-      <Filter>源文件\Socket</Filter>
-    </ClInclude>
     <ClInclude Include="..\..\Network\Socket\WorldSocket.h">
       <Filter>源文件\Socket</Filter>
     </ClInclude>
@@ -51,6 +48,18 @@
     <ClInclude Include="..\..\Network\Socket\ClientSocketMgr.h">
       <Filter>源文件\Socket</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Network\Socket\Opcode\Opcode.h">
+      <Filter>源文件\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Network\Socket\TCPSocket.h">
+      <Filter>源文件\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Network\Socket\UdpSocketServer.h">
+      <Filter>源文件\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Network\Socket\UdpSocketClient.h">
+      <Filter>源文件\Socket</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Network\Socket\WorldSocket.cpp">
@@ -60,6 +69,15 @@
       <Filter>源文件\Socket</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Network\Socket\Client.cpp">
+      <Filter>源文件\Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Network\Socket\UdpSocket.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Network\Socket\UdpSocketServer.cpp">
+      <Filter>源文件\Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Network\Socket\UdpSocketClient.cpp">
       <Filter>源文件\Socket</Filter>
     </ClCompile>
   </ItemGroup>

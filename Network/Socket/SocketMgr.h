@@ -1,5 +1,5 @@
-#ifndef _SOCKET_MGR_H
-#define _SOCKET_MGR_H
+#ifndef _TCP_SOCKET_MGR_H
+#define _TCP_SOCKET_MGR_H
 #include <boost/asio/io_service.hpp>
 #include <boost/asio.hpp>
 #include <stdlib.h>
@@ -7,7 +7,7 @@
 #include <thread>
 #include <memory>
 #include <iostream>
-#include "Socket.h"
+#include "TCPSocket.h"
 using namespace std;
 struct SocketInstance {
 public:
@@ -59,11 +59,11 @@ public:
 		}
 		return new  boost::asio::ip::tcp::socket(_io_service);
 	}
-	void OnSocketConnect(Socket<T>* sock)
+	void OnSocketConnect(TCPSocket<T>* sock)
 	{
 		_connections.push_back(sock);
 	}
-	vector<Socket<T>*> GetConnections() const
+	vector<TCPSocket<T>*> GetConnections() const
 	{
 		return _connections;
 	}
@@ -80,7 +80,7 @@ public:
 		return false;
 	}
 protected:
-	std::vector<Socket<T>*> _connections;
+	std::vector<TCPSocket<T>*> _connections;
 private:
 	void Io_Service_Worker()
 	{

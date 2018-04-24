@@ -1,12 +1,13 @@
 #ifndef __WORLDSOCKET_H__
 #define __WORLDSOCKET_H__
 #include "SocketMgr.h"
-#include "Socket.h"
+#include "TCPSocket.h"
 #include "Session.h"
 #include "Common/MessageBuffer.h"
 #include "Common/MPSCQueue.h"
 #include <chrono>
 #include <boost/asio/ip/tcp.hpp>
+#include "UdpSocketServer.h"
 
 using boost::asio::ip::tcp;
 struct EncryptablePacket
@@ -19,9 +20,9 @@ uint32 const SizeOfClientHeader = sizeof(uint32) + sizeof(uint16);
 uint32 const SizeOfServerHeader = sizeof(uint32) + sizeof(uint16);
 
 
-class WorldSocket : public Socket<WorldSocket>
+class WorldSocket : public TCPSocket<WorldSocket>
 {
-	typedef Socket<WorldSocket> BaseSocket;
+	typedef TCPSocket<WorldSocket> BaseSocket;
 
 public:
 	WorldSocket(tcp::socket* socket);
@@ -35,7 +36,6 @@ public:
 	void SendPacket(const char*  packet, size_t size, int cmd);
 
 	void SetSendBufferSize(std::size_t sendBufferSize) { _sendBufferSize = sendBufferSize; }
-	int32 GetClientId() const { return _authSeed; }
 
 protected:
 	void OnClose() override;
@@ -46,8 +46,6 @@ protected:
 	void WritePacketToBuffer(EncryptablePacket const& packet, MessageBuffer& buffer);
 
 private:
-
-	int32 _authSeed;
 
 	std::chrono::steady_clock::time_point _LastPingTime;
 	uint32 _OverSpeedPings;
@@ -63,6 +61,14 @@ private:
 	//QueryCallbackProcessor _queryProcessor;
 
 	std::string _ipCountry;
+protected:
+	//服务器保持常开
+	//客户端在需要打洞的时候和服务器连接，打洞确认后断开
+	UdpSocketServer * _udpSocket;
+public:
+	UdpSocketServer * GetUdpSocket() const
+	{
+		return _udpSocket;
+	}
 };
-
 #endif

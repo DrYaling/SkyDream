@@ -1,5 +1,5 @@
-#ifndef _WORLDSOCKETMGR_H
-#define _WORLDSOCKETMGR_H
+#ifndef _CLIENT_SOCKETMGR_H
+#define _CLIENT_SOCKETMGR_H
 #include "SocketMgr.h"
 #include "Client.h"
 #define sClientSocketMgr ClientSocketMgr::getInstance()
@@ -40,5 +40,7 @@ public:
 		}
 
 	}
+public :
+	ClientSocket * client;
 };
 #endif
