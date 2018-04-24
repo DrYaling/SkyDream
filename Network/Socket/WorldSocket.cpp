@@ -1,20 +1,29 @@
 
 #include "WorldSocket.h"
 #include <memory>
-
+#include "proto/punch.pb.h"
+#include "WorldSocketMgr.h"
 using boost::asio::ip::tcp;
 
 WorldSocket::WorldSocket(tcp::socket* socket)
 	: Socket(socket), _authSeed(0), _OverSpeedPings(0), _session(nullptr), _authed(false), _sendBufferSize(4096)
 {
-	//_headerBuffer.Resize(sizeof(ClientPktHeader));
+	_headerBuffer.Resize(sizeof(PacketHeader));
 }
-
+static int clientId = 0;
 void WorldSocket::Start()
 {
 	_remoteAddress = _socket->remote_endpoint().address();
 	_remotePort = _socket->remote_endpoint().port();
 	std::string ip_address = GetRemoteIpAddress().to_string();
+	//发送客户端Id包
+	char data[50] = {  };
+	_authSeed = clientId++;
+	SkyDream::IntValue iv;
+	iv.set_value(_authSeed);
+	auto size = iv.SerializeToArray(data, iv.ByteSize());
+	SendPacket(data, size, 3);
+	AsyncRead();
 	//_queryProcessor.AddQuery(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::CheckIpCallback, this, std::placeholders::_1)));
 }
 
@@ -108,8 +117,6 @@ void WorldSocket::ReadHandler()
 		return;
 
 	MessageBuffer& packet = GetReadBuffer();
-	AsyncRead();
-	return;
 	while (packet.GetActiveSize() > 0)
 	{
 		if (_headerBuffer.GetRemainingSpace() > 0)
@@ -167,13 +174,7 @@ void WorldSocket::ReadHandler()
 
 bool WorldSocket::ReadHeaderHandler()
 {
-	//ASSERT(_headerBuffer.GetActiveSize() == sizeof(ClientPktHeader));
-
-	//_authCrypt.DecryptRecv(_headerBuffer.GetReadPointer(), sizeof(ClientPktHeader));
-
-
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(_headerBuffer.GetReadPointer());
-	header->Size -= 2;
 
 	if (!header->IsValidSize() || !header->IsValidOpcode())
 	{
@@ -187,128 +188,68 @@ bool WorldSocket::ReadHeaderHandler()
 }
 
 
-WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
+ReadDataHandlerResult WorldSocket::ReadDataHandler()
 {
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(_headerBuffer.GetReadPointer());
-	//OpcodeClient opcode = static_cast<OpcodeClient>(header->Command);
-
-	//WorldPacket packet(opcode, std::move(_packetBuffer), GetConnectionType());
-
-	/*if (sPacketLog->CanLogPacket())
-		sPacketLog->LogPacket(packet, CLIENT_TO_SERVER, GetRemoteIpAddress(), GetRemotePort(), GetConnectionType());
-*/
-
 	std::unique_lock<std::mutex> sessionGuard(_worldSessionLock, std::defer_lock);
-
-	switch (0)
+	std::cout << "read remote cmd " << header->Command << ",data size " << header->Size << std::endl;
+	switch (header->Command)
 	{
-	/*case CMSG_PING:
+		//打洞
+	case 1:
 	{
-		LogOpcodeText(opcode, sessionGuard);
-		WorldPackets::Auth::Ping ping(std::move(packet));
-		if (!ping.ReadNoThrow())
+		SkyDream::Person psn;
+		psn.ParseFromArray(_packetBuffer.GetReadPointer(), _packetBuffer.GetActiveSize());
+		auto connections = sWorldSocketMgr->GetConnections();
+		for (auto c : connections)
 		{
-			TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_PING", GetRemoteIpAddress().to_string().c_str());
-			return ReadDataHandlerResult::Error;
+			WorldSocket* w = dynamic_cast<WorldSocket*>(c);
+			if (w)
+			{
+				if (w->GetClientId() == psn.clientid())
+				{
+					std::cout << "client " << _authSeed << " connecting to " << psn.clientid() << std::endl;
+
+					char data[4096] = { 0 };
+					size_t size = psn.ByteSize();
+					psn.SerializePartialToArray(data, size);
+					//给当前连接的客户端发送一个确认包
+					SendPacket(data, size, 1);
+					psn.set_ip(_socket->remote_endpoint().address().to_string().c_str());
+					psn.set_port(GetRemotePort());
+					size = psn.ByteSize();
+					psn.SerializePartialToArray(data, size);
+					//通过和另一个客户端的连接给另一个客户端发送一个连接包
+					w->SendPacket(data, size, 1);
+					break;
+				}
+			}
 		}
-		if (!HandlePing(ping))
-			return ReadDataHandlerResult::Error;
 		break;
 	}
-	case CMSG_AUTH_SESSION:
+	//list
+	case 2:
 	{
-		LogOpcodeText(opcode, sessionGuard);
-		if (_authed)
+		auto connections = sWorldSocketMgr->GetConnections();
+		SkyDream::ListConn* conn = new SkyDream::ListConn();
+		for (auto c : connections)
 		{
-			// locking just to safely log offending user is probably overkill but we are disconnecting him anyway
-			if (sessionGuard.try_lock())
-				TC_LOG_ERROR("network", "WorldSocket::ProcessIncoming: received duplicate CMSG_AUTH_SESSION from %s", _worldSession->GetPlayerInfo().c_str());
-			return ReadDataHandlerResult::Error;
+			WorldSocket* w = dynamic_cast<WorldSocket*>(c);
+			if (!w)
+				continue;
+			SkyDream::Person* person = conn->add_persons();
+			person->set_ip(c->GetRemoteIpAddress().to_string());
+			person->set_port(c->GetRemotePort());
+			person->set_clientid(w->GetClientId());
 		}
-
-		std::shared_ptr<WorldPackets::Auth::AuthSession> authSession = std::make_shared<WorldPackets::Auth::AuthSession>(std::move(packet));
-		if (!authSession->ReadNoThrow())
-		{
-			TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_AUTH_SESSION", GetRemoteIpAddress().to_string().c_str());
-			return ReadDataHandlerResult::Error;
-		}
-		HandleAuthSession(authSession);
-		return ReadDataHandlerResult::WaitingForQuery;
-	}
-	case CMSG_AUTH_CONTINUED_SESSION:
-	{
-		LogOpcodeText(opcode, sessionGuard);
-		if (_authed)
-		{
-			// locking just to safely log offending user is probably overkill but we are disconnecting him anyway
-			if (sessionGuard.try_lock())
-				TC_LOG_ERROR("network", "WorldSocket::ProcessIncoming: received duplicate CMSG_AUTH_CONTINUED_SESSION from %s", _worldSession->GetPlayerInfo().c_str());
-			return ReadDataHandlerResult::Error;
-		}
-
-		std::shared_ptr<WorldPackets::Auth::AuthContinuedSession> authSession = std::make_shared<WorldPackets::Auth::AuthContinuedSession>(std::move(packet));
-		if (!authSession->ReadNoThrow())
-		{
-			TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_AUTH_CONTINUED_SESSION", GetRemoteIpAddress().to_string().c_str());
-			return ReadDataHandlerResult::Error;
-		}
-		HandleAuthContinuedSession(authSession);
-		return ReadDataHandlerResult::WaitingForQuery;
-	}
-	case CMSG_KEEP_ALIVE:
-		LogOpcodeText(opcode, sessionGuard);
-		break;
-	case CMSG_LOG_DISCONNECT:
-		LogOpcodeText(opcode, sessionGuard);
-		packet.rfinish();   // contains uint32 disconnectReason;
-		break;
-	case CMSG_ENABLE_NAGLE:
-		LogOpcodeText(opcode, sessionGuard);
-		SetNoDelay(false);
-		break;
-	case CMSG_CONNECT_TO_FAILED:
-	{
-		sessionGuard.lock();
-
-		LogOpcodeText(opcode, sessionGuard);
-		WorldPackets::Auth::ConnectToFailed connectToFailed(std::move(packet));
-		if (!connectToFailed.ReadNoThrow())
-		{
-			TC_LOG_ERROR("network", "WorldSocket::ReadDataHandler(): client %s sent malformed CMSG_CONNECT_TO_FAILED", GetRemoteIpAddress().to_string().c_str());
-			return ReadDataHandlerResult::Error;
-		}
-		HandleConnectToFailed(connectToFailed);
+		char data[4096] = { 0 };
+		size_t size = conn->ByteSize();
+		conn->SerializePartialToArray(data, size);
+		SendPacket(data, size, 2);
 		break;
 	}
-	case CMSG_ENABLE_ENCRYPTION_ACK:
-		LogOpcodeText(opcode, sessionGuard);
-		HandleEnableEncryptionAck();
-		break;*/
 	default:
 	{
-		sessionGuard.lock();
-
-		//LogOpcodeText(opcode, sessionGuard);
-
-		if (!_session)
-		{
-			//TC_LOG_ERROR("network.opcode", "ProcessIncoming: Client not authed opcode = %u", uint32(opcode));
-			return ReadDataHandlerResult::Error;
-		}
-
-	//	OpcodeHandler const* handler = opcodeTable[opcode];
-	//	if (!handler)
-		{
-	//		TC_LOG_ERROR("network.opcode", "No defined handler for opcode %s sent by %s", GetOpcodeNameForLogging(static_cast<OpcodeClient>(packet.GetOpcode())).c_str(), _worldSession->GetPlayerInfo().c_str());
-	//		break;
-		}
-
-		// Our Idle timer will reset on any non PING opcodes.
-		// Catches people idling on the login screen and any lingering ingame connections.
-		_session->ResetTimeOutTime();
-
-		// Copy the packet to the heap before enqueuing
-		_session->QueuePacket(nullptr);
 		break;
 	}
 	}
@@ -316,11 +257,19 @@ WorldSocket::ReadDataHandlerResult WorldSocket::ReadDataHandler()
 	return ReadDataHandlerResult::Ok;
 }
 
-void WorldSocket::SendPacket(const char* packet, size_t size)
+void WorldSocket::SendPacket(const char* packet, size_t size, int cmd)
 {
 	if (!IsOpen())
 		return;
 
+	PacketHeader header;
+	header.Command = cmd;
+	header.Size = size;
+	MessageBuffer buffer(size + sizeof(header));
+	buffer.Write(&header, sizeof(header));
+	buffer.Write(packet, size);
+	std::cout << "WorldSocket SendPacket cmd " << cmd << ",pack size " << buffer.GetActiveSize() << ",real size " << size + sizeof(header) << std::endl;
+	QueuePacket(std::move(buffer));
 	/*if (sPacketLog->CanLogPacket())
 		sPacketLog->LogPacket(packet, SERVER_TO_CLIENT, GetRemoteIpAddress(), GetRemotePort());
 

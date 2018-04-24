@@ -6,8 +6,9 @@
 #include <vector>
 #include <thread>
 #include <memory>
+#include <iostream>
+#include "Socket.h"
 using namespace std;
-#define sSocketMgr SocketMgr::getInstance()
 struct SocketInstance {
 public:
 	bool isAvaliable;
@@ -19,17 +20,11 @@ public:
 	{
 	}
 };
+template<class T>
 class SocketMgr
 {
 public:
-	static SocketMgr* getInstance()
-	{
-		static SocketMgr* instance = nullptr;
-		if (nullptr == instance)
-			instance = new SocketMgr(10);
-		return instance;
-	}
-	SocketMgr(size_t socketCount) :_io_service(1), _io_work(_io_service)
+	SocketMgr(size_t socketCount) :_io_service(1), _io_work(_io_service), _connections(0)
 	{
 		for (auto i = 0; i < socketCount; i++)
 		{
@@ -42,16 +37,35 @@ public:
 	{
 		m_vSockets.clear();
 	}
+	void Update()
+	{
+		for (auto s : _connections)
+		{
+			if (s)
+				s->Update();
+		}
+	}
 	boost::asio::ip::tcp::socket* GetSocket()
 	{
-		for (auto sock : m_vSockets)
+		for (auto sock = m_vSockets.begin(); sock != m_vSockets.end(); sock++)
 		{
-			if (sock.isAvaliable)
+			if ((*sock).isAvaliable)
 			{
-				sock.isAvaliable = false;
-				return sock.socket;
+				(*sock).isAvaliable = false;
+				auto ret = (*sock).socket;
+				m_vSockets.erase(sock);
+				return ret;
 			}
 		}
+		return new  boost::asio::ip::tcp::socket(_io_service);
+	}
+	void OnSocketConnect(Socket<T>* sock)
+	{
+		_connections.push_back(sock);
+	}
+	vector<Socket<T>*> GetConnections() const
+	{
+		return _connections;
 	}
 	bool ReleaseSocket(boost::asio::ip::tcp::socket* socket)
 	{
@@ -65,12 +79,14 @@ public:
 		}
 		return false;
 	}
+protected:
+	std::vector<Socket<T>*> _connections;
 private:
 	void Io_Service_Worker()
 	{
-		std::cout << "IO_SREVICE_WORKER START" << std::endl;
+		//std::cout << "IO_SREVICE_WORKER START" << std::endl;
 		_io_service.run();
-		std::cout << "IO_SREVICE_WORKER END" << std::endl;
+		//std::cout << "IO_SREVICE_WORKER END" << std::endl;
 	}
 	std::vector<SocketInstance> m_vSockets;
 	boost::asio::io_service _io_service;

@@ -3,12 +3,8 @@ package SkyDream;
   
 message Person {  
   required string ip = 1;  
-  required int32 port = 2;
-  required int32 clientId = 3;    
+  required int32 port = 2;    
 } 
 message ListConn{
 	repeated Person persons = 1; 
-}
-message IntValue{
-	required int32 value = 1;
 }

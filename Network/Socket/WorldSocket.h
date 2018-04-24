@@ -1,6 +1,6 @@
 #ifndef __WORLDSOCKET_H__
 #define __WORLDSOCKET_H__
-
+#include "SocketMgr.h"
 #include "Socket.h"
 #include "Session.h"
 #include "Common/MessageBuffer.h"
@@ -18,6 +18,7 @@ struct EncryptablePacket
 uint32 const SizeOfClientHeader = sizeof(uint32) + sizeof(uint16);
 uint32 const SizeOfServerHeader = sizeof(uint32) + sizeof(uint16);
 
+
 class WorldSocket : public Socket<WorldSocket>
 {
 	typedef Socket<WorldSocket> BaseSocket;
@@ -31,28 +32,22 @@ public:
 	void Start() override;
 	bool Update() override;
 
-	void SendPacket(const char*  packet, size_t size);
+	void SendPacket(const char*  packet, size_t size, int cmd);
 
 	void SetSendBufferSize(std::size_t sendBufferSize) { _sendBufferSize = sendBufferSize; }
+	int32 GetClientId() const { return _authSeed; }
 
 protected:
 	void OnClose() override;
 	void ReadHandler() override;
 	bool ReadHeaderHandler();
 
-	enum class ReadDataHandlerResult
-	{
-		Ok = 0,
-		Error = 1,
-		WaitingForQuery = 2
-	};
-
 	ReadDataHandlerResult ReadDataHandler();
 	void WritePacketToBuffer(EncryptablePacket const& packet, MessageBuffer& buffer);
 
 private:
 
-	uint32 _authSeed;
+	int32 _authSeed;
 
 	std::chrono::steady_clock::time_point _LastPingTime;
 	uint32 _OverSpeedPings;

@@ -33,11 +33,19 @@ struct PacketHeader
 		return Command < 1024;
 	}
 };
+enum class ReadDataHandlerResult
+{
+	Ok = 0,
+	Error = 1,
+	WaitingForQuery = 2
+};
 template<class T>
 class Socket : public std::enable_shared_from_this<T>
 {
+
 public:
-	explicit Socket(tcp::socket* socket) : _socket(socket), _readBuffer(), _closed(false), _closing(false), _isWritingAsync(false)
+	std::string name;
+	explicit Socket(tcp::socket* socket) : _socket(socket), _readBuffer(), _closed(false), _closing(false), _isWritingAsync(false), _sendLock(),_receiveLock(),name()
 	{
 		_readBuffer.Resize(READ_BLOCK_SIZE);
 	}
@@ -84,7 +92,7 @@ public:
 		_readBuffer.Normalize();
 		_readBuffer.EnsureFreeSpace();
 		_socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
-			std::bind(&Socket<T>::ReadHandlerInternal, this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+			std::bind(&Socket<T>::ReadHandlerInternal, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 	void AsyncReadWithCallback(void (T::*callback)(boost::system::error_code, std::size_t))
@@ -95,12 +103,15 @@ public:
 		_readBuffer.Normalize();
 		_readBuffer.EnsureFreeSpace();
 		_socket->async_read_some(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),
-			std::bind(callback, this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+			std::bind(callback, this, std::placeholders::_1, std::placeholders::_2));
 	}
 
 	void QueuePacket(MessageBuffer&& buffer)
 	{
-		_writeQueue.push(std::move(buffer));
+		{
+			std::lock_guard<std::mutex> lock_guard(_sendLock);
+			_writeQueue.push(std::move(buffer));
+		}
 
 #ifdef SD_SOCKET_USE_IOCP
 		AsyncProcessQueue();
@@ -117,7 +128,7 @@ public:
 		boost::system::error_code shutdownError;
 		_socket->shutdown(boost::asio::socket_base::shutdown_send, shutdownError);
 		if (shutdownError)
-			;// SD_LOG_DEBUG("network", "Socket::CloseSocket: %s errored when shutting down socket: %i (%s)", GetRemoteIpAddress().to_string().c_str(),
+			std::cout << "shutdown socket fail " << shutdownError.message() << std::endl;// SD_LOG_DEBUG("network", "Socket::CloseSocket: %s errored when shutting down socket: %i (%s)", GetRemoteIpAddress().to_string().c_str(),
 			//	shutdownError.value(), shutdownError.message().c_str());
 
 		OnClose();
@@ -142,7 +153,7 @@ protected:
 #ifdef SD_SOCKET_USE_IOCP
 		MessageBuffer& buffer = _writeQueue.front();
 		_socket->async_write_some(boost::asio::buffer(buffer.GetReadPointer(), buffer.GetActiveSize()), std::bind(&Socket<T>::WriteHandler,
-			this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+			this, std::placeholders::_1, std::placeholders::_2));
 #else
 		_socket.async_write_some(boost::asio::null_buffers(), std::bind(&Socket<T>::WriteHandlerWrapper,
 			this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
@@ -162,11 +173,14 @@ protected:
 	boost::asio::ip::address _remoteAddress;
 	uint16 _remotePort;
 	std::shared_ptr<tcp::socket> _socket;
+	std::mutex _sendLock;
+	std::mutex _receiveLock;
 
 
 private:
 	void ReadHandlerInternal(boost::system::error_code error, size_t transferredBytes)
 	{
+		std::cout << "read data " << error << "\t size :" << transferredBytes << std::endl;
 		if (error)
 		{
 			CloseSocket();
@@ -184,10 +198,11 @@ private:
 		if (!error)
 		{
 			_isWritingAsync = false;
+			std::cout << "write bytes " << transferedBytes << ",active size " << _writeQueue.front().GetActiveSize() << std::endl;
 			_writeQueue.front().ReadCompleted(transferedBytes);
 			if (!_writeQueue.front().GetActiveSize())
 				_writeQueue.pop();
-
+			std::cout << _writeQueue.empty() << std::endl;
 			if (!_writeQueue.empty())
 				AsyncProcessQueue();
 			else if (_closing)

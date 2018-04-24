@@ -15,12 +15,11 @@ class AsyncAcceptor
 	typedef void(*AcceptCallback)(tcp::socket* newSocket);
 public:
 	explicit AsyncAcceptor(tcp::socket* socket,const char* addr, int16_t port):
-		_acceptor(socket->get_io_service()),_endpoint(boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::from_string("127.0.0.1"), 8080)),
+		_acceptor(socket->get_io_service()),_endpoint(boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::from_string(addr), port)),
 		_closed(false),_closing(false)
 	{
-
 	}
-	bool Bind(bool reuse_addr = false)
+	bool Bind(bool reuse_addr = true)
 	{
 		boost::system::error_code errorCode;
 		_acceptor.open(_endpoint.protocol(), errorCode);

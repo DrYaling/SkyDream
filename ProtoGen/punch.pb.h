@@ -34,6 +34,8 @@ void protobuf_AssignDesc_punch_2eproto();
 void protobuf_ShutdownFile_punch_2eproto();
 
 class Person;
+class ListConn;
+class IntValue;
 
 // ===================================================================
 
@@ -109,12 +111,21 @@ class Person : public ::google::protobuf::Message {
   inline ::google::protobuf::int32 port() const;
   inline void set_port(::google::protobuf::int32 value);
 
+  // required int32 clientId = 3;
+  inline bool has_clientid() const;
+  inline void clear_clientid();
+  static const int kClientIdFieldNumber = 3;
+  inline ::google::protobuf::int32 clientid() const;
+  inline void set_clientid(::google::protobuf::int32 value);
+
   // @@protoc_insertion_point(class_scope:SkyDream.Person)
  private:
   inline void set_has_ip();
   inline void clear_has_ip();
   inline void set_has_port();
   inline void clear_has_port();
+  inline void set_has_clientid();
+  inline void clear_has_clientid();
 
   ::google::protobuf::UnknownFieldSet _unknown_fields_;
 
@@ -122,12 +133,174 @@ class Person : public ::google::protobuf::Message {
   mutable int _cached_size_;
   ::std::string* ip_;
   ::google::protobuf::int32 port_;
+  ::google::protobuf::int32 clientid_;
   friend void  protobuf_AddDesc_punch_2eproto();
   friend void protobuf_AssignDesc_punch_2eproto();
   friend void protobuf_ShutdownFile_punch_2eproto();
 
   void InitAsDefaultInstance();
   static Person* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class ListConn : public ::google::protobuf::Message {
+ public:
+  ListConn();
+  virtual ~ListConn();
+
+  ListConn(const ListConn& from);
+
+  inline ListConn& operator=(const ListConn& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const ListConn& default_instance();
+
+  void Swap(ListConn* other);
+
+  // implements Message ----------------------------------------------
+
+  ListConn* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const ListConn& from);
+  void MergeFrom(const ListConn& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // repeated .SkyDream.Person persons = 1;
+  inline int persons_size() const;
+  inline void clear_persons();
+  static const int kPersonsFieldNumber = 1;
+  inline const ::SkyDream::Person& persons(int index) const;
+  inline ::SkyDream::Person* mutable_persons(int index);
+  inline ::SkyDream::Person* add_persons();
+  inline const ::google::protobuf::RepeatedPtrField< ::SkyDream::Person >&
+      persons() const;
+  inline ::google::protobuf::RepeatedPtrField< ::SkyDream::Person >*
+      mutable_persons();
+
+  // @@protoc_insertion_point(class_scope:SkyDream.ListConn)
+ private:
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::google::protobuf::RepeatedPtrField< ::SkyDream::Person > persons_;
+  friend void  protobuf_AddDesc_punch_2eproto();
+  friend void protobuf_AssignDesc_punch_2eproto();
+  friend void protobuf_ShutdownFile_punch_2eproto();
+
+  void InitAsDefaultInstance();
+  static ListConn* default_instance_;
+};
+// -------------------------------------------------------------------
+
+class IntValue : public ::google::protobuf::Message {
+ public:
+  IntValue();
+  virtual ~IntValue();
+
+  IntValue(const IntValue& from);
+
+  inline IntValue& operator=(const IntValue& from) {
+    CopyFrom(from);
+    return *this;
+  }
+
+  inline const ::google::protobuf::UnknownFieldSet& unknown_fields() const {
+    return _unknown_fields_;
+  }
+
+  inline ::google::protobuf::UnknownFieldSet* mutable_unknown_fields() {
+    return &_unknown_fields_;
+  }
+
+  static const ::google::protobuf::Descriptor* descriptor();
+  static const IntValue& default_instance();
+
+  void Swap(IntValue* other);
+
+  // implements Message ----------------------------------------------
+
+  IntValue* New() const;
+  void CopyFrom(const ::google::protobuf::Message& from);
+  void MergeFrom(const ::google::protobuf::Message& from);
+  void CopyFrom(const IntValue& from);
+  void MergeFrom(const IntValue& from);
+  void Clear();
+  bool IsInitialized() const;
+
+  int ByteSize() const;
+  bool MergePartialFromCodedStream(
+      ::google::protobuf::io::CodedInputStream* input);
+  void SerializeWithCachedSizes(
+      ::google::protobuf::io::CodedOutputStream* output) const;
+  ::google::protobuf::uint8* SerializeWithCachedSizesToArray(::google::protobuf::uint8* output) const;
+  int GetCachedSize() const { return _cached_size_; }
+  private:
+  void SharedCtor();
+  void SharedDtor();
+  void SetCachedSize(int size) const;
+  public:
+  ::google::protobuf::Metadata GetMetadata() const;
+
+  // nested types ----------------------------------------------------
+
+  // accessors -------------------------------------------------------
+
+  // required int32 value = 1;
+  inline bool has_value() const;
+  inline void clear_value();
+  static const int kValueFieldNumber = 1;
+  inline ::google::protobuf::int32 value() const;
+  inline void set_value(::google::protobuf::int32 value);
+
+  // @@protoc_insertion_point(class_scope:SkyDream.IntValue)
+ private:
+  inline void set_has_value();
+  inline void clear_has_value();
+
+  ::google::protobuf::UnknownFieldSet _unknown_fields_;
+
+  ::google::protobuf::uint32 _has_bits_[1];
+  mutable int _cached_size_;
+  ::google::protobuf::int32 value_;
+  friend void  protobuf_AddDesc_punch_2eproto();
+  friend void protobuf_AssignDesc_punch_2eproto();
+  friend void protobuf_ShutdownFile_punch_2eproto();
+
+  void InitAsDefaultInstance();
+  static IntValue* default_instance_;
 };
 // ===================================================================
 
@@ -234,6 +407,92 @@ inline void Person::set_port(::google::protobuf::int32 value) {
   set_has_port();
   port_ = value;
   // @@protoc_insertion_point(field_set:SkyDream.Person.port)
+}
+
+// required int32 clientId = 3;
+inline bool Person::has_clientid() const {
+  return (_has_bits_[0] & 0x00000004u) != 0;
+}
+inline void Person::set_has_clientid() {
+  _has_bits_[0] |= 0x00000004u;
+}
+inline void Person::clear_has_clientid() {
+  _has_bits_[0] &= ~0x00000004u;
+}
+inline void Person::clear_clientid() {
+  clientid_ = 0;
+  clear_has_clientid();
+}
+inline ::google::protobuf::int32 Person::clientid() const {
+  // @@protoc_insertion_point(field_get:SkyDream.Person.clientId)
+  return clientid_;
+}
+inline void Person::set_clientid(::google::protobuf::int32 value) {
+  set_has_clientid();
+  clientid_ = value;
+  // @@protoc_insertion_point(field_set:SkyDream.Person.clientId)
+}
+
+// -------------------------------------------------------------------
+
+// ListConn
+
+// repeated .SkyDream.Person persons = 1;
+inline int ListConn::persons_size() const {
+  return persons_.size();
+}
+inline void ListConn::clear_persons() {
+  persons_.Clear();
+}
+inline const ::SkyDream::Person& ListConn::persons(int index) const {
+  // @@protoc_insertion_point(field_get:SkyDream.ListConn.persons)
+  return persons_.Get(index);
+}
+inline ::SkyDream::Person* ListConn::mutable_persons(int index) {
+  // @@protoc_insertion_point(field_mutable:SkyDream.ListConn.persons)
+  return persons_.Mutable(index);
+}
+inline ::SkyDream::Person* ListConn::add_persons() {
+  // @@protoc_insertion_point(field_add:SkyDream.ListConn.persons)
+  return persons_.Add();
+}
+inline const ::google::protobuf::RepeatedPtrField< ::SkyDream::Person >&
+ListConn::persons() const {
+  // @@protoc_insertion_point(field_list:SkyDream.ListConn.persons)
+  return persons_;
+}
+inline ::google::protobuf::RepeatedPtrField< ::SkyDream::Person >*
+ListConn::mutable_persons() {
+  // @@protoc_insertion_point(field_mutable_list:SkyDream.ListConn.persons)
+  return &persons_;
+}
+
+// -------------------------------------------------------------------
+
+// IntValue
+
+// required int32 value = 1;
+inline bool IntValue::has_value() const {
+  return (_has_bits_[0] & 0x00000001u) != 0;
+}
+inline void IntValue::set_has_value() {
+  _has_bits_[0] |= 0x00000001u;
+}
+inline void IntValue::clear_has_value() {
+  _has_bits_[0] &= ~0x00000001u;
+}
+inline void IntValue::clear_value() {
+  value_ = 0;
+  clear_has_value();
+}
+inline ::google::protobuf::int32 IntValue::value() const {
+  // @@protoc_insertion_point(field_get:SkyDream.IntValue.value)
+  return value_;
+}
+inline void IntValue::set_value(::google::protobuf::int32 value) {
+  set_has_value();
+  value_ = value;
+  // @@protoc_insertion_point(field_set:SkyDream.IntValue.value)
 }
 
 
