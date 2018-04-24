@@ -19,6 +19,7 @@ public:
 	ClientSocket(ClientSocket const& right) = delete;
 	ClientSocket& operator=(ClientSocket const& right) = delete;
 	void ReadHandler() override {}
+	void Start(const char* url, uint16_t port);
 	void Start() override;
 	bool Update() override;
 

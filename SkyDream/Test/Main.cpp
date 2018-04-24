@@ -8,6 +8,7 @@
 #include "Common//Common.h"
 #include "Socket/WorldSocket.h"
 #include "Socket/Client.h"
+#include "Socket/AsyncAcceptor.h"
 SkyDream::Asio::IoContext contex;
 boost::asio::ip::tcp::resolver resolver(contex);
 boost::asio::ip::tcp::socket sock(contex);
@@ -55,7 +56,8 @@ bool InitAccepter()
 				try
 				{
 					pSock->non_blocking(true);
-					std::cout << "accept from " << pSock->remote_endpoint() << std::endl;
+					string accept_info = "accept from " + pSock->remote_endpoint().address().to_string() + "\n";
+					std::cout << accept_info;
 				}
 				catch (boost::system::system_error const& err)
 				{
@@ -81,9 +83,26 @@ void testSockets()
 	//WorldSocket* server = new WorldSocket(std::move(*pSock));
 
 }
+static void OnSocketAccept(tcp::socket* sock)
+{
+	//sWorldSocketMgr.OnSocketOpen(std::forward<tcp::socket>(sock), threadIndex);
+	std::cout << "accept callback " << sock->remote_endpoint() << std::endl;	
+}
+void ThreadAccepter() 
+{
+	//tcp::socket * sock = sSocketMgr->GetSocket();
+	//AsyncAcceptor* _acceptor = new AsyncAcceptor(sock,"127.0.0.1",8080);
+	//_acceptor->Bind();
+	//_acceptor->AsyncAcceptWithCallback<&OnSocketAccept>();
+	auto client = ClientSocket::Create();
+	Sleep(500);
+	client->Start("127.00.0.1", 10003);
+	while (1) Sleep(1);
+	
+}
 int main()
 {
-	auto thread = std::thread(testSockets);
+	auto thread = std::thread(ThreadAccepter);
 	thread.detach();
 	while (true) Sleep(1);
 	return 0;

@@ -108,6 +108,8 @@ void WorldSocket::ReadHandler()
 		return;
 
 	MessageBuffer& packet = GetReadBuffer();
+	AsyncRead();
+	return;
 	while (packet.GetActiveSize() > 0)
 	{
 		if (_headerBuffer.GetRemainingSpace() > 0)

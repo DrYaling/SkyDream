@@ -6,13 +6,21 @@ ClientSocket::ClientSocket(tcp::socket * socket)
 	_remoteAddress = boost::asio::ip::address::from_string("127.0.0.1");
 }
 
+void ClientSocket::Start(const char* url,uint16_t port)
+{
+	//std::string ip_address = GetRemoteIpAddress().to_string();
+	SetNoDelay(true);
+	//_socket->non_blocking(true);
+	auto ed = boost::asio::ip::tcp::endpoint(boost::asio::ip::address::from_string(url), port);
+	_socket->async_connect(ed, boost::bind(&ClientSocket::AsyncConnectCallback, this, boost::asio::placeholders::error));
+}
 void ClientSocket::Start()
 {
 	//std::string ip_address = GetRemoteIpAddress().to_string();
 	SetNoDelay(true);
 	//_socket->non_blocking(true);
 	auto ed = boost::asio::ip::tcp::endpoint(_remoteAddress, 8080);
-	_socket->async_connect(ed, boost::bind(&ClientSocket::AsyncConnectCallback,this, boost::asio::placeholders::error));
+	_socket->async_connect(ed, boost::bind(&ClientSocket::AsyncConnectCallback, this, boost::asio::placeholders::error));
 }
 
 bool ClientSocket::Update()
@@ -26,7 +34,8 @@ void ClientSocket::SendPacket(const char * packet, size_t size)
 {
 }
 
-void ClientSocket::AsyncConnectCallback(const boost::system::error_code & error)
+void ClientSocket::AsyncConnectCallback(const boost::system::error_code & er)
 {
-	std::cout << "connect error: " << error.message().c_str() << std::endl;
+	string connect_info = "connect ret :" + er.message() + "\n";
+	std::cout << connect_info.c_str();
 }

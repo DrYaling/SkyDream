@@ -12,14 +12,15 @@ using namespace boost::asio::ip;
 #endif
 class AsyncAcceptor
 {
+	typedef void(*AcceptCallback)(tcp::socket* newSocket);
 public:
 	explicit AsyncAcceptor(tcp::socket* socket,const char* addr, int16_t port):
-		_socket(socket),_acceptor(socket->get_io_service()),_endpoint(boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::from_string("127.0.0.1"), 8080)),
+		_acceptor(socket->get_io_service()),_endpoint(boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::from_string("127.0.0.1"), 8080)),
 		_closed(false),_closing(false)
 	{
 
 	}
-	bool Start()
+	bool Bind(bool reuse_addr = false)
 	{
 		boost::system::error_code errorCode;
 		_acceptor.open(_endpoint.protocol(), errorCode);
@@ -28,6 +29,7 @@ public:
 			std::cout << "open" << errorCode.message().c_str() << std::endl;
 			return false;
 		}
+		_acceptor.set_option(boost::asio::ip::tcp::acceptor::reuse_address(reuse_addr));
 		_acceptor.bind(_endpoint, errorCode);
 		if (errorCode)
 		{
@@ -42,13 +44,14 @@ public:
 		}
 		return true;
 	}
-	template<class T>
+	//template<class T>
 	void AsyncAccept();
 
 	template<AcceptCallback acceptCallback>
 	void AsyncAcceptWithCallback()
 	{
-		_acceptor.async_accept(*_socket, [this](boost::system::error_code error)
+		tcp::socket* _socket = new tcp::socket(_acceptor.get_io_service());
+		_acceptor.async_accept(*_socket, [this,_socket](boost::system::error_code error)
 		{
 			if (!error)
 			{
@@ -56,14 +59,17 @@ public:
 				{
 					_socket->non_blocking(true);
 
-					acceptCallback(std::move(*_socket));
+					acceptCallback(_socket);
 				}
 				catch (boost::system::system_error const& err)
 				{
-					TC_LOG_INFO("network", "Failed to initialize client's socket %s", err.what());
+					std::cout << "Failed to retrieve client's remote address "<<err.what() << std::endl;
 				}
 			}
-
+			else
+			{
+				std::cout << "async_accept address fail " << error << std::endl;
+			}
 			if (!_closed)
 				this->AsyncAcceptWithCallback<acceptCallback>();
 		});
@@ -71,15 +77,16 @@ public:
 private:
 
 	tcp::acceptor _acceptor;
-	tcp::socket* _socket;
+	//tcp::socket* _socket;
 	tcp::endpoint _endpoint;
 	bool _closed;
 	bool _closing;
 };
-template<class T>
+//template<class T>
 void AsyncAcceptor::AsyncAccept()
 {
-	_acceptor.async_accept(*_socket, [this](boost::system::error_code error)
+	tcp::socket* _socket = new tcp::socket(_acceptor.get_io_service());
+	_acceptor.async_accept(*_socket, [this, _socket](boost::system::error_code error)
 	{
 		if (!error)
 		{
@@ -89,14 +96,14 @@ void AsyncAcceptor::AsyncAccept()
 			}
 			catch (boost::system::system_error const& err)
 			{
-				std::string msg = "Failed to retrieve client's remote address " + err.what();
-				std::cout << msg << std::endl;
+				//std::string msg = "Failed to retrieve client's remote address " + err.what();
+				std::cout << "Failed to retrieve client's remote address "<<err.what() << std::endl;
 			}
 		}
 
 		// lets slap some more this-> on this so we can fix this bug with gcc 4.7.2 throwing internals in yo face
 		if (!_closed)
-			this->AsyncAccept<T>();
+			this->AsyncAccept();
 	});
 }
 #endif

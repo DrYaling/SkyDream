@@ -26,7 +26,7 @@ public:
 	{
 		static SocketMgr* instance = nullptr;
 		if (nullptr == instance)
-			instance = new SocketMgr(2);
+			instance = new SocketMgr(10);
 		return instance;
 	}
 	SocketMgr(size_t socketCount) :_io_service(1), _io_work(_io_service)
@@ -68,8 +68,9 @@ public:
 private:
 	void Io_Service_Worker()
 	{
+		std::cout << "IO_SREVICE_WORKER START" << std::endl;
 		_io_service.run();
-		std::cout << "IO_SREVICE_WORKER" << std::endl;
+		std::cout << "IO_SREVICE_WORKER END" << std::endl;
 	}
 	std::vector<SocketInstance> m_vSockets;
 	boost::asio::io_service _io_service;

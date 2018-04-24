@@ -1,0 +1,7 @@
+syntax = "proto2";
+package SkyDream;  
+  
+message Person {  
+  required string ip = 1;  
+  required int32 port = 2;    
+} 

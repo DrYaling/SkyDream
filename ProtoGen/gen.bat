@@ -3,7 +3,7 @@
 :: protoc程序名
 set "PROTOC_EXE=protoc.exe"
 :: .proto文件名
-set "PROTOC_FILE_NAME=test.proto"
+set "PROTOC_FILE_NAME=punch.proto"
 
 set "PROTOC_PATH=%cd%"
 set "CPP_OUT_PATH=%cd%"

@@ -18,9 +18,15 @@
     <ClCompile Include="..\..\Dep\google\proto\test.pb.cc">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\Dep\google\proto\punch.pb.cc">
+      <Filter>源文件</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Dep\google\proto\test.pb.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Dep\google\proto\punch.pb.h">
       <Filter>源文件</Filter>
     </ClInclude>
   </ItemGroup>

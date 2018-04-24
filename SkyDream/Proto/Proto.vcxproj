@@ -19,9 +19,11 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\Dep\google\proto\punch.pb.cc" />
     <ClCompile Include="..\..\Dep\google\proto\test.pb.cc" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\Dep\google\proto\punch.pb.h" />
     <ClInclude Include="..\..\Dep\google\proto\test.pb.h" />
   </ItemGroup>
   <ItemGroup>
