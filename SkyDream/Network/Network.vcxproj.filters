@@ -45,6 +45,12 @@
     <ClInclude Include="..\..\Network\Socket\AsyncAcceptor.h">
       <Filter>源文件\Socket</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Network\Socket\WorldSocketMgr.h">
+      <Filter>源文件\Socket</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Network\Socket\ClientSocketMgr.h">
+      <Filter>源文件\Socket</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Network\Socket\WorldSocket.cpp">

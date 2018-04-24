@@ -134,10 +134,12 @@
     <ClInclude Include="..\..\Network\Common\Common.h" />
     <ClInclude Include="..\..\Network\Socket\AsyncAcceptor.h" />
     <ClInclude Include="..\..\Network\Socket\Client.h" />
+    <ClInclude Include="..\..\Network\Socket\ClientSocketMgr.h" />
     <ClInclude Include="..\..\Network\Socket\Session.h" />
     <ClInclude Include="..\..\Network\Socket\Socket.h" />
     <ClInclude Include="..\..\Network\Socket\SocketMgr.h" />
     <ClInclude Include="..\..\Network\Socket\WorldSocket.h" />
+    <ClInclude Include="..\..\Network\Socket\WorldSocketMgr.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Network\Socket\Client.cpp" />
