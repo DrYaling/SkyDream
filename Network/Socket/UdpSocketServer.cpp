@@ -194,8 +194,8 @@ ReadDataHandlerResult UdpSocketServer::ReadDataHandler()
 	case C2S_Opcode::C2S_PUNCH:
 	{
 		std::cout << "punch" << std::endl;
-		SkyDream::IntValue psn;
-		psn.ParseFromArray(_packetBuffer.GetReadPointer(), _packetBuffer.GetActiveSize());
+		SkyDream::C2S_Punch punch;
+		punch.ParseFromArray(_packetBuffer.GetReadPointer(), _packetBuffer.GetActiveSize());
 		auto connections = sWorldSocketMgr->GetConnections();
 		for (auto c : connections)
 		{
@@ -203,14 +203,15 @@ ReadDataHandlerResult UdpSocketServer::ReadDataHandler()
 			if (w)
 			{
 				//取到要打洞的对象连接
-				if (w->GetClientId() == psn.value())
+				if (w->GetClientId() == punch.from())
 				{
-					std::cout <<_clientId<< " connecting to " << psn.value() << std::endl;
+					std::cout << punch.from() << " connecting to " << punch.to() << std::endl;
 					bool comfirmed = false;
 					punch_content content;
 					for (auto itr = _punchWaitList.begin(); itr != _punchWaitList.end(); itr++)
 					{
-						if (psn.value() == (*itr).from_ && (*itr).to_ == _clientId)
+						//需要确认的和列表存的顺序是反过来的，因为前面一个人先通知服务器
+						if (punch.to() == (*itr).from_ && (*itr).to_ == punch.from())
 						{
 							comfirmed = true;
 							content = *itr;
@@ -232,7 +233,7 @@ ReadDataHandlerResult UdpSocketServer::ReadDataHandler()
 						SendPacket(data, size, S2C_Opcode::S2C_PUNCH_COMFIRM);
 						person.set_ip(GetRemoteIpAddress().to_string().c_str());
 						person.set_port(GetRemotePort());
-						person.set_clientid(_clientId);
+						person.set_clientid(punch.to());
 						size = person.ByteSize();
 						person.SerializePartialToArray(data, size);
 						//通过和另一个客户端的连接给另一个客户端发送一个连接包
@@ -242,11 +243,11 @@ ReadDataHandlerResult UdpSocketServer::ReadDataHandler()
 					else
 					{
 						punch_content pcc;
-						pcc.from_ = _clientId;
-						pcc.to_ = psn.value();
+						pcc.from_ = punch.from();
+						pcc.to_ = punch.to();
 						_punchWaitList.push_back(pcc);
 						SkyDream::IntValue val;
-						val.set_value(_clientId);
+						val.set_value(punch.from());
 						char buff[16] = { 0 };
 						auto size = val.ByteSize();
 						val.SerializeToArray(buff, size);
@@ -302,13 +303,14 @@ bool UdpSocketServer::AsyncProcessQueue()
 }
 void UdpSocketServer::ReadHandlerInternal(boost::system::error_code error, size_t transferredBytes)
 {
-	std::cout << "read data " << error << "\t size :" << transferredBytes << std::endl;
 	if (error)
 	{
-		CloseSocket();
+		std::cout << "udp read fail :" << error.message() << std::endl;
+		//CloseSocket();
 		return;
 	}
 
+	std::cout << " UdpSocketServer read data  size :" << transferredBytes << std::endl;
 	_readBuffer.WriteCompleted(transferredBytes);
 	ReadHandler();
 }

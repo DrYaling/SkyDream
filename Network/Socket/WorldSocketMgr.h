@@ -2,7 +2,10 @@
 #define _WORLDSOCKETMGR_H
 #include "SocketMgr.h"
 #include "WorldSocket.h"
+#include "AsyncAcceptor.h"
+#include "UdpSocketServer.h"
 #define sWorldSocketMgr WorldSocketMgr::getInstance()
+
 class WorldSocketMgr :public SocketMgr<WorldSocket>
 {
 public:
@@ -18,5 +21,24 @@ public:
 	{
 
 	}
+	~WorldSocketMgr()
+	{
+		if (nullptr != _acceptor)
+		{
+			_acceptor->Stop();
+			delete _acceptor;
+		}
+		if (nullptr != _udpServer)
+		{
+			_udpServer->CloseSocket();
+			delete _udpServer;
+		}
+	}
+	//Æô¶¯
+	void StartUp();
+	void Stop();
+private :
+	AsyncAcceptor* _acceptor;
+	UdpSocketServer* _udpServer;
 };
 #endif

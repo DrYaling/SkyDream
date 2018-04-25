@@ -86,7 +86,6 @@ private:
 
 	std::atomic<bool> _closed;
 	std::atomic<bool> _closing;
-	int32 _clientId;
 	bool _isWritingAsync;
 	bool _isConnected;
 };

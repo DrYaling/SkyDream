@@ -9,6 +9,10 @@ message Person {
 message ListConn{
 	repeated Person persons = 1; 
 }
+message C2S_Punch{
+	required int32 from = 1;
+	required int32 to = 2;
+}
 message IntValue{
 	required int32 value = 1;
 }

@@ -19,6 +19,17 @@ public:
 		_closed(false),_closing(false)
 	{
 	}
+	void Stop() {
+		_acceptor.close();
+	}
+	boost::asio::ip::address GetBindAddress()
+	{
+		return _endpoint.address();
+	}
+	uint16 GetBindPort()
+	{
+		return _endpoint.port();
+	}
 	bool Bind(bool reuse_addr = true)
 	{
 		boost::system::error_code errorCode;

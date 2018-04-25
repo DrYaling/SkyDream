@@ -63,7 +63,7 @@ public:
 		AsyncRead();
 	}
 	//开始连接服务器或者客户端
-	void Start(boost::asio::ip::address addr, uint16 port, int32 punch_client)
+	void Start(boost::asio::ip::address addr, uint16 port, int32 punch_client, uint16_t native_client)
 	{
 		_isC2SUdp = true;
 		_remoteEndpoint = udp::endpoint(addr, port + 302);
@@ -72,12 +72,13 @@ public:
 		_socket->open(local_add.protocol());
 		_socket->bind(local_add);
 
-		//_socket->set_option(boost::asio::socket_base::reuse_address(true));
-		SkyDream::IntValue iv;
-		iv.set_value(punch_client);
+		_socket->set_option(boost::asio::socket_base::reuse_address(true));
+		SkyDream::C2S_Punch punch;
+		punch.set_from(native_client);
+		punch.set_to(punch_client);
 		char buff[16] = { 0 };
-		int16 size = iv.ByteSize();
-		iv.SerializePartialToArray(buff, size);
+		int16 size = punch.ByteSize();
+		punch.SerializePartialToArray(buff, size);
 		SendPacket(buff, size, C2S_Opcode::C2S_PUNCH);
 		AsyncRead();
 	}
@@ -276,6 +277,7 @@ protected:
 
 #ifdef SD_SOCKET_USE_IOCP
 		MessageBuffer& buffer = _writeQueue.front();
+		std::cout << "send data to " << _remoteEndpoint << " ,size:" << buffer.GetActiveSize() << std::endl;
 		_socket->async_send_to(boost::asio::buffer(buffer.GetReadPointer(), buffer.GetActiveSize()), _remoteEndpoint, \
 			boost::bind(&UdpSocketClient::WriteHandler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 #else
@@ -291,7 +293,15 @@ private:
 		std::cout << "read data " << error.message().c_str() << "\t size :" << transferredBytes << " from " << _receiveEndpoint << std::endl;
 		if (error)
 		{
-			CloseSocket();
+			//CloseSocket();
+			//Sleep(1000);
+			SkyDream::IntValue iv;
+			iv.set_value(0);
+			char buff[16] = { 0 };
+			int16 size = iv.ByteSize();
+			iv.SerializePartialToArray(buff, size);
+			SendPacket(buff, size, C2C_Opcode::C2C_HAND);
+			AsyncRead();
 			return;
 		}
 
@@ -306,7 +316,7 @@ private:
 		if (!error)
 		{
 			_isWritingAsync = false;
-			std::cout << "write bytes " << transferedBytes << ",active size " << _writeQueue.front().GetActiveSize() << std::endl;
+			std::cout << "udp Client write bytes " << transferedBytes << ",active size " << _writeQueue.front().GetActiveSize() << std::endl;
 			_writeQueue.front().ReadCompleted(transferedBytes);
 			if (!_writeQueue.front().GetActiveSize())
 				_writeQueue.pop();
@@ -317,7 +327,12 @@ private:
 				CloseSocket();
 		}
 		else
-			CloseSocket();
+		{
+			std::cout << "write to remote fail " << error.message() << std::endl;
+			//CloseSocket();
+			Sleep(2000);
+			AsyncProcessQueue();//继续尝试
+		}
 	}
 
 #else

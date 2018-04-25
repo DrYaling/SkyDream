@@ -71,13 +71,13 @@
     <ClCompile Include="..\..\Network\Socket\Client.cpp">
       <Filter>源文件\Socket</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\Network\Socket\UdpSocket.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\Network\Socket\UdpSocketServer.cpp">
       <Filter>源文件\Socket</Filter>
     </ClCompile>
     <ClCompile Include="..\..\Network\Socket\UdpSocketClient.cpp">
+      <Filter>源文件\Socket</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Network\Socket\WorldSocketMgr.cpp">
       <Filter>源文件\Socket</Filter>
     </ClCompile>
   </ItemGroup>

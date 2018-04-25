@@ -147,10 +147,10 @@
   <ItemGroup>
     <ClCompile Include="..\..\Network\Socket\Client.cpp" />
     <ClCompile Include="..\..\Network\Socket\Session.cpp" />
-    <ClCompile Include="..\..\Network\Socket\UdpSocket.cpp" />
     <ClCompile Include="..\..\Network\Socket\UdpSocketClient.cpp" />
     <ClCompile Include="..\..\Network\Socket\UdpSocketServer.cpp" />
     <ClCompile Include="..\..\Network\Socket\WorldSocket.cpp" />
+    <ClCompile Include="..\..\Network\Socket\WorldSocketMgr.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Protobuf\Protobuf.vcxproj">

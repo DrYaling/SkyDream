@@ -30,7 +30,7 @@ void WorldSocket::Start()
 	iv.SerializeToArray(data, size);
 	SendPacket(data, size, S2C_Opcode::S2C_CLIENT_ID);
 	_udpSocket = new UdpSocketServer(_socket->get_io_service());
-	_udpSocket->Start(this->GetRemoteIpAddress(), this->GetRemotePort(), _clientId);
+	_udpSocket->Start(_socket->local_endpoint().address(), _socket->local_endpoint().port(), _clientId);
 	AsyncRead();
 	//_queryProcessor.AddQuery(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::CheckIpCallback, this, std::placeholders::_1)));
 }
