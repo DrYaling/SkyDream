@@ -20,12 +20,7 @@ static void OnSocketAccept(tcp::socket* sock)
 }
 void ThreadAccepter()
 {
-	//创建服务器
-	tcp::socket * sock = sWorldSocketMgr->GetSocket();
-	AsyncAcceptor* _acceptor = new AsyncAcceptor(sock, "0.0.0.0", 8081);
-	if (!_acceptor->Bind())
-		std::cout << "error acceptor bind fail" << std::endl;
-	_acceptor->AsyncAcceptWithCallback<&OnSocketAccept>();
+	sWorldSocketMgr->StartUp();
 	//auto client = new  ClientSocket(sock);
 	//Sleep(500);
 	//client->Start("127.0.0.1", 8081);
@@ -34,8 +29,6 @@ void ThreadAccepter()
 		sWorldSocketMgr->Update();
 		Sleep(6);
 	}
-
-	delete _acceptor;
 
 }
 int main()
