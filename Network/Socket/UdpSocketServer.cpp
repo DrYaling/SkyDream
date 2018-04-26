@@ -182,7 +182,6 @@ bool UdpSocketServer::ReadHeaderHandler()
 	_packetBuffer.Resize(header->Size);
 	return true;
 }
-
 ReadDataHandlerResult UdpSocketServer::ReadDataHandler()
 {
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(_headerBuffer.GetReadPointer());
@@ -221,8 +220,10 @@ ReadDataHandlerResult UdpSocketServer::ReadDataHandler()
 						SkyDream::Person person;
 
 						udp::endpoint to;
+						boost::asio::ip::address addr;
 						sWorldSocketMgr->GetEndPointOf(content.to_, to);
-						person.set_ip(to.address().to_string().c_str());
+						addr = to.address();
+						person.set_ip(addr.to_string().c_str());
 						person.set_port(to.port());
 						person.set_clientid(content.to_);
 						char data[4096] = { 0 };
@@ -232,7 +233,8 @@ ReadDataHandlerResult UdpSocketServer::ReadDataHandler()
 
 						udp::endpoint from;
 						sWorldSocketMgr->GetEndPointOf(content.from_, from);
-						person.set_ip(from.address().to_string().c_str());
+						addr = from.address();
+						person.set_ip(addr.to_string().c_str());
 						person.set_port(from.port());
 						person.set_clientid(content.from_);
 						size = person.ByteSize();

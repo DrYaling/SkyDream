@@ -8,7 +8,7 @@ void UdpSocketClient::Bind(boost::asio::ip::address&& addr, uint16 port, int32 c
 	_socket->open(endpoint.protocol());
 	_socket->bind(endpoint);
 	_clientId = clientId;
-	_socket->set_option(boost::asio::socket_base::reuse_address(true));
+	//_socket->set_option(boost::asio::socket_base::reuse_address(true));
 	AsyncRead();
 }
 void UdpSocketClient::StartC2C(const char * addr, uint16_t port, int32 clientId)//开始做c-c连接
@@ -16,6 +16,7 @@ void UdpSocketClient::StartC2C(const char * addr, uint16_t port, int32 clientId)
 	auto endpoint = udp::endpoint(boost::asio::ip::address::from_string(addr), port);
 	std::cout << "udp c-c ed " << endpoint << ",id " << clientId << std::endl;
 	sClientSocketMgr->OnConnectRemote(clientId, endpoint);
+	_receiveEndpoint = endpoint;
 	SkyDream::C2S_Punch punch;
 	char buff[32] = { 0 };
 	punch.set_from(_clientId);
@@ -32,6 +33,7 @@ void UdpSocketClient::Punch(boost::asio::ip::address&& addr, uint16 port, int32 
 	try {
 		//-1是服务器
 		sClientSocketMgr->OnConnectRemote(-1, udp::endpoint(addr, port + 302));
+		_receiveEndpoint = udp::endpoint(addr, port + 302);
 		SkyDream::C2S_Punch punch;
 		punch.set_from(native_client);
 		punch.set_to(punch_client);
@@ -131,7 +133,7 @@ bool UdpSocketClient::AsyncProcessQueue()
 void UdpSocketClient::ReadHandlerInternal(boost::system::error_code error, size_t transferredBytes)
 
 {
-	std::cout << " udp client read data " << error.message().c_str() << "\t size :" << transferredBytes << " from " << _receiveEndpoint << std::endl;
+	std::cout << " udp client read data "<<error<<"," << error.message().c_str() << "\t size :" << transferredBytes << " from " << _receiveEndpoint << std::endl;
 	if (error)
 	{
 		//CloseSocket();

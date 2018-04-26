@@ -15,7 +15,7 @@ class AsyncAcceptor
 	typedef void(*AcceptCallback)(tcp::socket* newSocket);
 public:
 	explicit AsyncAcceptor(tcp::socket* socket,const char* addr, int16_t port):
-		_acceptor(socket->get_io_service()),_endpoint(boost::asio::ip::tcp::endpoint(boost::asio::ip::address_v4::from_string(addr), port)),
+		_acceptor(socket->get_io_service()),_endpoint(boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
 		_closed(false),_closing(false)
 	{
 	}
