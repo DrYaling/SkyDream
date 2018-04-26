@@ -5,7 +5,7 @@
 #include <google/protobuf/message.h>
 #include "UdpSocketClient.h"
 //const char* serverIp = "127.0.0.1";
-class ClientSocket:public TCPSocket<ClientSocket> 
+class ClientSocket :public TCPSocket<ClientSocket>
 {
 	typedef TCPSocket<ClientSocket> BaseSocket;
 public:
@@ -22,16 +22,18 @@ public:
 	void Bind(const char*url, uint16_t port);
 	bool Update() override;
 
-	void SendPacket(const char*  packet, size_t size,int cmd);
+	void SendPacket(const char*  packet, size_t size, int cmd);
 
 	void SetSendBufferSize(std::size_t sendBufferSize) { _sendBufferSize = sendBufferSize; }
-	void ComfirmUdp(boost::asio::io_service& io)
+	void ComfirmUdp()
 	{
 
 		if (nullptr == _udpSocket)
 		{
-			_udpSocket = new UdpSocketClient(io);
+			_udpSocket = new UdpSocketClient(_socket->get_io_service());
 			_udpSocket->name = "native udp client";
+			auto tcp_ed = _socket->local_endpoint();
+			_udpSocket->Bind(std::move(tcp_ed.address()), tcp_ed.port(),_clientId);
 		}
 	}
 protected:

@@ -9,6 +9,7 @@ using boost::asio::ip::tcp;
 WorldSocket::WorldSocket(tcp::socket* socket)
 	: TCPSocket(socket), _OverSpeedPings(0), _session(nullptr), _authed(false), _sendBufferSize(4096)
 {
+	_clientId = -1;
 	_headerBuffer.Resize(sizeof(PacketHeader));
 }
 static int clientId = 0;
@@ -188,7 +189,7 @@ bool WorldSocket::ReadHeaderHandler()
 		//	GetRemoteIpAddress().to_string().c_str(), header->Size, header->Command);
 		return false;
 	}
-
+	_packetBuffer.Reset();
 	_packetBuffer.Resize(header->Size);
 	return true;
 }
@@ -198,7 +199,7 @@ ReadDataHandlerResult WorldSocket::ReadDataHandler()
 {
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(_headerBuffer.GetReadPointer());
 	std::unique_lock<std::mutex> sessionGuard(_worldSessionLock, std::defer_lock);
-	std::cout << "read remote cmd " << header->Command << ",data size " << header->Size << std::endl;
+	std::cout << "server remote cmd " << header->Command << ",data size " << header->Size << std::endl;
 	switch (header->Command)
 	{
 		//list

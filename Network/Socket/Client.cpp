@@ -11,7 +11,6 @@ ClientSocket::ClientSocket(tcp::socket * socket)
 {
 	_remoteEndpoint = boost::asio::ip::address::from_string("127.0.0.1");
 	_headerBuffer.Resize(sizeof(PacketHeader));
-	ComfirmUdp(_socket->get_io_service());
 }
 
 ClientSocket::~ClientSocket()
@@ -121,6 +120,7 @@ bool ClientSocket::ReadHeaderHandler()
 		return false;
 	}
 
+	_packetBuffer.Reset();
 	_packetBuffer.Resize(header->Size);
 	return true;
 }
@@ -128,7 +128,7 @@ bool ClientSocket::ReadHeaderHandler()
 ReadDataHandlerResult ClientSocket::ReadDataHandler()
 {
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(_headerBuffer.GetReadPointer());
-
+	std::cout << "client tcp recv " << header->Command << std::endl;
 	switch (header->Command)
 	{
 		//´ò¶´
@@ -138,13 +138,8 @@ ReadDataHandlerResult ClientSocket::ReadDataHandler()
 		remote.ParseFromArray(_packetBuffer.GetReadPointer(), _packetBuffer.GetActiveSize());
 
 
-		if (nullptr == _udpSocket)
-		{
-			UdpSocketClient* client = new UdpSocketClient(_socket->get_io_service());
-			std::cout << "try connect to client " << remote.value() << std::endl;
-			_udpSocket->name = std::move("native udp client");
-		}
-		_udpSocket->Start(this->GetRemoteIpAddress(), this->GetRemotePort(), remote.value(),_clientId);
+		ComfirmUdp();
+		_udpSocket->Punch(this->GetRemoteIpAddress(), this->GetRemotePort(), remote.value(),_clientId);
 		break;
 	}
 	//list
@@ -158,8 +153,12 @@ ReadDataHandlerResult ClientSocket::ReadDataHandler()
 			std::cout << p.ip() << "\t" << p.port() << "\t" << p.clientid() << std::endl;
 			if (p.clientid() == _clientId)
 				continue;
-			std::cout<<_clientId << "  try connect to client " << p.clientid() << std::endl;
-			_udpSocket->Start(this->GetRemoteIpAddress(), this->GetRemotePort(), p.clientid(),_clientId);
+			if (_clientId == 0)
+			{
+				std::cout << _clientId << "  try connect to client " << p.clientid() << std::endl;
+				ComfirmUdp();
+				_udpSocket->Punch(this->GetRemoteIpAddress(), this->GetRemotePort(), p.clientid(), _clientId);
+			}
 			return ReadDataHandlerResult::Ok; 
 		}
 		std::cout << "no other client connected to server " << std::endl;
@@ -167,13 +166,6 @@ ReadDataHandlerResult ClientSocket::ReadDataHandler()
 		char data[] = { 0 };
 		size_t size = 0;
 		SendPacket(data, size, C2S_Opcode::C2S_CLIST);
-		if (nullptr == _udpSocket)
-		{
-			UdpSocketClient* client = new UdpSocketClient(_socket->get_io_service());
-			client->name = std::move("native udp client");
-			client->Start(this->GetRemoteIpAddress(), this->GetRemotePort(),0,0);
-			_udpSocket = client;
-		}
 		break;
 	}
 	case S2C_Opcode::S2C_CLIENT_ID:

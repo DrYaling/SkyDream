@@ -20,8 +20,8 @@ void ThreadAccepter()
 	auto client = new  ClientSocket(sock);
 	client->name = std::move("native client");
 	Sleep(500);
-	client->Start("118.113.200.77", 8081);
-	//client->Start("127.0.0.1", 8081);
+	//client->Start("118.113.200.77", 8081);
+	client->Start("127.0.0.1", 8081);
 	while (1)
 	{
 		Sleep(16);

@@ -26,7 +26,7 @@ public:
 	explicit UdpSocketServer(boost::asio::io_service& service);
 	~UdpSocketServer();
 	//开始连接服务器或者客户端
-	void Start(boost::asio::ip::address addr, uint16 port, int32 client);
+	void Start(boost::asio::ip::address addr, uint16 port);
 
 	virtual bool Update();
 

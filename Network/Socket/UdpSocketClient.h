@@ -34,10 +34,11 @@ public:
 		_sendLock(),
 		_receiveLock(),
 		_handTryCount(6),
-		_isConnected(false),
 		name()
 	{
+		_connectingMap.clear();
 		_readBuffer.Resize(READ_BLOCK_SIZE);
+		_headerBuffer.Resize(sizeof(PacketHeader));
 	}
 	virtual ~UdpSocketClient()
 	{
@@ -45,17 +46,28 @@ public:
 		boost::system::error_code error;
 		_socket->close(error);
 	}
+	void Bind(boost::asio::ip::address&& addr, uint16 port, int32 clientId);
+
 	//开始做c-c连接
 	void StartC2C(const char* addr, uint16_t port, int32 clientId);
-	void Start(boost::asio::ip::address&& addr, uint16 port, int32 punch_client, uint16_t native_client);
+	void Punch(boost::asio::ip::address&& addr, uint16 port, int32 punch_client, uint16_t native_client);
 	void AsyncWait(int32 clientId)
 	{
 		while (_handTryCount > 0)
 		{
 			_handTryCount--;
 			Sleep(1000);
-			if (_isConnected)
+			auto itr = _connectingMap.find(clientId);
+			if (itr == _connectingMap.end())
+			{
 				return;
+			}
+			else if (itr->second)
+			{
+				_connectingMap.erase(itr);
+				return;
+			}
+
 			SkyDream::IntValue iv;
 			iv.set_value(0);
 			char buff[16] = { 0 };
@@ -213,7 +225,7 @@ protected:
 			//	GetRemoteIpAddress().to_string().c_str(), header->Size, header->Command);
 			return false;
 		}
-
+		_packetBuffer.Reset();
 		_packetBuffer.Resize(header->Size);
 		return true;
 	}
@@ -244,6 +256,7 @@ private:
 	{
 		if (!error)
 		{
+			std::cout << "udp client write to remote size " << transferedBytes << std::endl;
 			_isWritingAsync = false;
 			_writeQueue.front().buffer.ReadCompleted(transferedBytes);
 			if (!_writeQueue.front().buffer.GetActiveSize())
@@ -330,7 +343,8 @@ private:
 	int16 _handTryCount;
 
 	bool _isWritingAsync;
-	bool _isConnected;
+	std::map<int32, bool> _connectingMap;
+	int32 _clientId;
 };
 
 #endif // __UDP_SOCKET_H__

@@ -46,7 +46,7 @@ public:
 	{
 		return _connections;
 	}
-	bool GetEndpointOf(int32 clientId, boost::asio::ip::address& addr, uint16& port)
+	bool GetEndPointOf(int32 clientId, boost::asio::ip::address& addr, uint16& port)
 	{
 		auto itr = _connections.find(clientId);
 		if (itr != _connections.end())
@@ -58,9 +58,52 @@ public:
 		}
 		return false;
 	}
+	bool GetClientIdOf(udp::endpoint& endpoint, int32& clientId)
+	{
+		for (auto itr : _udpConnectionMap)
+		{
+			if (itr.second == endpoint)
+			{
+				clientId = itr.first;
+				return true;
+			}
+		}
+		return false;
+	}
+	bool GetEndPointOf(int32 clientId, udp::endpoint& endpoint)
+	{
+		auto itr = _udpConnectionMap.find(clientId);
+		if (itr != _udpConnectionMap.end())
+		{
+			endpoint = itr->second;
+			return true;
+		}
+		return false;
+
+
+	}
+	void OnConnectRemoteUdp(int32 clientId, udp::endpoint& endpoint)
+	{
+		auto itr = _udpConnectionMap.find(clientId);
+		//从新添加，有肯能endpoint变了
+		if (itr != _udpConnectionMap.end())
+		{
+			_udpConnectionMap.erase(itr);
+		}
+		_udpConnectionMap.insert(std::pair<int32, udp::endpoint>(clientId, endpoint));
+	}
+	void OnDisconnectRemoteUdp(int32 clientId)
+	{
+		auto itr = _udpConnectionMap.find(clientId);
+		if (itr != _udpConnectionMap.end())
+		{
+			_udpConnectionMap.erase(itr);
+		}
+	}
 private :
 	AsyncAcceptor* _acceptor;
 	UdpSocketServer* _udpServer;
-	std::map<int32,WorldSocket*> _connections;
+	std::map<int32, WorldSocket*> _connections;
+	std::map<int32, boost::asio::ip::udp::endpoint> _udpConnectionMap;
 };
 #endif

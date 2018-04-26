@@ -168,7 +168,7 @@ protected:
 private:
 	void ReadHandlerInternal(boost::system::error_code error, size_t transferredBytes)
 	{
-		std::cout << "read data " << error << "\t size :" << transferredBytes << std::endl;
+		std::cout<<name << "  read data " << error << "\t size :" << transferredBytes << std::endl;
 		if (error)
 		{
 			CloseSocket();
@@ -186,7 +186,7 @@ private:
 		if (!error)
 		{
 			_isWritingAsync = false;
-			std::cout << "write bytes " << transferedBytes << ",active size " << _writeQueue.front().GetActiveSize() << std::endl;
+			std::cout << "write bytes " << transferedBytes << ",active size " << _writeQueue.front().GetActiveSize()<<" to "<<_clientId << std::endl;
 			_writeQueue.front().ReadCompleted(transferedBytes);
 			if (!_writeQueue.front().GetActiveSize())
 				_writeQueue.pop();

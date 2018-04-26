@@ -15,7 +15,7 @@ void WorldSocketMgr::StartUp()
 		std::cout << "error acceptor bind fail" << std::endl;
 	_acceptor->AsyncAcceptWithCallback<&OnSocketAccept>();
 	_udpServer = new UdpSocketServer(sock->get_io_service());
-	_udpServer->Start(_acceptor->GetBindAddress(), _acceptor->GetBindPort(), 0);
+	_udpServer->Start(_acceptor->GetBindAddress(), _acceptor->GetBindPort());
 }
 
 void WorldSocketMgr::Stop()
