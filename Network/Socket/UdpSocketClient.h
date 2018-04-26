@@ -46,43 +46,9 @@ public:
 		_socket->close(error);
 	}
 	//开始做c-c连接
-	void Start(const char* addr, uint16_t port)
-	{
-		_isC2SUdp = false;
-		CloseSocket();
-		_remoteEndpoint = udp::endpoint(boost::asio::ip::address::from_string(addr), port);
-		//_socket->set_option(boost::asio::socket_base::reuse_address(true));
-		std::cout << "udp c-c ed " << _remoteEndpoint << std::endl;
-		SkyDream::IntValue iv;
-		iv.set_value(0);
-		char buff[16] = { 0 };
-		int16 size = iv.ByteSize();
-		iv.SerializePartialToArray(buff, size);
-		SendPacket(buff, size, C2C_Opcode::C2C_HAND);
-		std::thread t = std::thread(std::bind(&UdpSocketClient::AsyncWait, this));
-		AsyncRead();
-	}
-	//开始连接服务器或者客户端
-	void Start(boost::asio::ip::address addr, uint16 port, int32 punch_client, uint16_t native_client)
-	{
-		_isC2SUdp = true;
-		_remoteEndpoint = udp::endpoint(addr, port + 302);
-		boost::asio::ip::udp::endpoint local_add(boost::asio::ip::address::from_string("127.0.0.1"), 7474 + punch_client);
-
-		_socket->open(local_add.protocol());
-		_socket->bind(local_add);
-
-		_socket->set_option(boost::asio::socket_base::reuse_address(true));
-		SkyDream::C2S_Punch punch;
-		punch.set_from(native_client);
-		punch.set_to(punch_client);
-		char buff[16] = { 0 };
-		int16 size = punch.ByteSize();
-		punch.SerializePartialToArray(buff, size);
-		SendPacket(buff, size, C2S_Opcode::C2S_PUNCH);
-		AsyncRead();
-	}
-	void AsyncWait()
+	void StartC2C(const char* addr, uint16_t port, int32 clientId);
+	void Start(boost::asio::ip::address&& addr, uint16 port, int32 punch_client, uint16_t native_client);
+	void AsyncWait(int32 clientId)
 	{
 		while (_handTryCount > 0)
 		{
@@ -96,7 +62,7 @@ public:
 			int16 size = iv.ByteSize();
 			iv.SerializePartialToArray(buff, size);
 			std::cout << "hand again" << std::endl;
-			SendPacket(buff, size, C2C_Opcode::C2C_HAND);
+			SendPacket(buff, size, C2C_Opcode::C2C_HAND, clientId);
 		}
 		std::cout << "hand fail" << std::endl;
 
@@ -142,7 +108,7 @@ public:
 		_socket->async_receive_from(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace())\
 			, _receiveEndpoint, boost::bind(&UdpSocketClient::ReadHandlerInternal, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 	}
-	void QueuePacket(MessageBuffer&& buffer)
+	void QueuePacket(udpSocketWriteBuffer&& buffer)
 	{
 		{
 			std::lock_guard<std::mutex> lock_guard(_sendLock);
@@ -253,7 +219,7 @@ protected:
 	}
 
 	ReadDataHandlerResult ReadDataHandler();
-	void SendPacket(const char*  packet, size_t size, int cmd)
+	void SendPacket(const char*  packet, size_t size, int cmd,int remoteId)
 	{
 		if (!IsOpen())
 			return;
@@ -264,50 +230,13 @@ protected:
 		MessageBuffer buffer(size + sizeof(header));
 		buffer.Write(&header, sizeof(header));
 		buffer.Write(packet, size);
-		QueuePacket(std::move(buffer));
+		QueuePacket(udpSocketWriteBuffer(remoteId,buffer));
 	}
 
 
-	bool AsyncProcessQueue()
-	{
-		if (_isWritingAsync)
-			return false;
-
-		_isWritingAsync = true;
-
-#ifdef SD_SOCKET_USE_IOCP
-		MessageBuffer& buffer = _writeQueue.front();
-		std::cout << "send data to " << _remoteEndpoint << " ,size:" << buffer.GetActiveSize() << std::endl;
-		_socket->async_send_to(boost::asio::buffer(buffer.GetReadPointer(), buffer.GetActiveSize()), _remoteEndpoint, \
-			boost::bind(&UdpSocketClient::WriteHandler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
-#else
-		_socket.async_write_some(boost::asio::null_buffers(), std::bind(&TCPSocket<T>::WriteHandlerWrapper,
-			this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
-#endif
-
-		return false;
-	}
+	bool AsyncProcessQueue();
 private:
-	void ReadHandlerInternal(boost::system::error_code error, size_t transferredBytes)
-	{
-		std::cout << "read data " << error.message().c_str() << "\t size :" << transferredBytes << " from " << _receiveEndpoint << std::endl;
-		if (error)
-		{
-			//CloseSocket();
-			//Sleep(1000);
-			SkyDream::IntValue iv;
-			iv.set_value(0);
-			char buff[16] = { 0 };
-			int16 size = iv.ByteSize();
-			iv.SerializePartialToArray(buff, size);
-			SendPacket(buff, size, C2C_Opcode::C2C_HAND);
-			AsyncRead();
-			return;
-		}
-
-		_readBuffer.WriteCompleted(transferredBytes);
-		ReadHandler();
-	}
+	void ReadHandlerInternal(boost::system::error_code error, size_t transferredBytes);
 
 #ifdef SD_SOCKET_USE_IOCP
 
@@ -316,11 +245,9 @@ private:
 		if (!error)
 		{
 			_isWritingAsync = false;
-			std::cout << "udp Client write bytes " << transferedBytes << ",active size " << _writeQueue.front().GetActiveSize() << std::endl;
-			_writeQueue.front().ReadCompleted(transferedBytes);
-			if (!_writeQueue.front().GetActiveSize())
+			_writeQueue.front().buffer.ReadCompleted(transferedBytes);
+			if (!_writeQueue.front().buffer.GetActiveSize())
 				_writeQueue.pop();
-			std::cout << _writeQueue.empty() << std::endl;
 			if (!_writeQueue.empty())
 				AsyncProcessQueue();
 			else if (_closing)
@@ -387,7 +314,7 @@ private:
 #endif
 	std::vector<punch_content> _punchWaitList;
 	MessageBuffer _readBuffer;
-	std::queue<MessageBuffer> _writeQueue;
+	std::queue<udpSocketWriteBuffer> _writeQueue;
 	udp::endpoint _remoteEndpoint;
 	udp::endpoint _receiveEndpoint;
 	std::shared_ptr<udp::socket> _socket;
@@ -404,7 +331,6 @@ private:
 
 	bool _isWritingAsync;
 	bool _isConnected;
-	bool _isC2SUdp;
 };
 
 #endif // __UDP_SOCKET_H__

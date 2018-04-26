@@ -36,7 +36,7 @@ public:
 	uint16 GetRemotePort() const;
 
 	void AsyncRead();
-	void QueuePacket(MessageBuffer&& buffer);
+	void QueuePacket(udpSocketWriteBuffer&& buffer);
 
 	bool IsOpen() const;
 
@@ -54,7 +54,7 @@ protected:
 	bool ReadHeaderHandler();
 
 	ReadDataHandlerResult ReadDataHandler();
-	void SendPacket(const char*  packet, size_t size, int cmd);
+	void SendPacket(const char*  packet, size_t size, int cmd, int32 clientId);
 
 
 	bool AsyncProcessQueue();
@@ -74,7 +74,7 @@ private:
 #endif
 	std::vector<punch_content> _punchWaitList;
 	MessageBuffer _readBuffer;
-	std::queue<MessageBuffer> _writeQueue;
+	std::queue<udpSocketWriteBuffer> _writeQueue;
 	udp::endpoint _remoteEndpoint;
 	std::shared_ptr<udp::socket> _socket;
 	std::mutex _sendLock;

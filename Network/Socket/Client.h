@@ -25,12 +25,19 @@ public:
 	void SendPacket(const char*  packet, size_t size,int cmd);
 
 	void SetSendBufferSize(std::size_t sendBufferSize) { _sendBufferSize = sendBufferSize; }
-	void StartC2CConnection(const char* addr, uint16 port);
+	void ComfirmUdp(boost::asio::io_service& io)
+	{
+
+		if (nullptr == _udpSocket)
+		{
+			_udpSocket = new UdpSocketClient(io);
+			_udpSocket->name = "native udp client";
+		}
+	}
 protected:
 	void AsyncConnectCallback(const  boost::system::error_code& error);
 private:
-	UdpSocketClient * _c2cSocket;
-	UdpSocketClient * _c2sSocket;
+	UdpSocketClient * _udpSocket;
 	MessageBuffer _headerBuffer;
 	MessageBuffer _packetBuffer;
 	std::size_t _sendBufferSize;

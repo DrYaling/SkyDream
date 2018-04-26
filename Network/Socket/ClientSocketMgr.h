@@ -16,31 +16,45 @@ public:
 public:
 	ClientSocketMgr(size_t socket_count) :SocketMgr(socket_count)
 	{
-
+		_udpConnectionMap.clear();
 	}
-	void OnConnectFail(ClientSocket* sock,boost::asio::ip::address addr,int16_t port)
+	void OnConnectRemote(int32 clientId, udp::endpoint endpoint)
 	{
-		std::cout << sock->name << "   connect fail" << std::endl;
-		for (auto i  =_connections.begin();i!=_connections.end();i++)
+		_udpConnectionMap.insert(std::pair<int32, udp::endpoint>(clientId, endpoint));
+	}
+	void OnDisconnectRemote(int32 clientId)
+	{
+		auto itr = _udpConnectionMap.find(clientId);
+		if (itr != _udpConnectionMap.end())
 		{
-			//std::cout << "search sock " << (*i)->name << std::endl;
-			if ((*i) == sock)
+			_udpConnectionMap.erase(itr);
+		}
+	}
+	bool GetClientIdOf(udp::endpoint& endpoint, int32& clientId) 
+	{
+		for (auto itr : _udpConnectionMap)
+		{
+			if (itr.second == endpoint)
 			{
-				_connections.erase(i);
-				//sock->CloseSocket();
-				//delete sock;
-				tcp::socket * nsock = sClientSocketMgr->GetSocket();
-				ClientSocket* client = new ClientSocket(nsock);
-				client-> name= std::move("remote client");
-				std::cout << "remote client try connect to " << addr << ":" << port << std::endl;
-				client->Start(addr.to_string().c_str(), port);
-				sClientSocketMgr->OnSocketConnect(client);
-				return;
+				clientId = itr.first;
+				return true;
 			}
 		}
+		return false;
+	}
+	bool GetEndPointOf(int32 clientId, udp::endpoint& endpoint)
+	{
+		auto itr = _udpConnectionMap.find(clientId);
+		if (itr != _udpConnectionMap.end())
+		{
+			endpoint = itr->second;
+			return true;
+		}
+		return false;
+
 
 	}
 public :
-	ClientSocket * client;
+	std::map<int32, boost::asio::ip::udp::endpoint> _udpConnectionMap;
 };
 #endif

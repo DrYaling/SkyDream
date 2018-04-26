@@ -1,5 +1,46 @@
 #include "UdpSocketClient.h"
 #include "ClientSocketMgr.h"
+#include <stdlib.h>
+void UdpSocketClient::StartC2C(const char * addr, uint16_t port, int32 clientId)//开始做c-c连接
+{
+	auto endpoint = udp::endpoint(boost::asio::ip::address::from_string(addr), port);
+	std::cout << "udp c-c ed " << endpoint << ",id " << clientId << std::endl;
+	sClientSocketMgr->OnConnectRemote(clientId, endpoint);
+	SkyDream::IntValue iv;
+	iv.set_value(0);
+	char buff[16] = { 0 };
+	int16 size = iv.ByteSize();
+	iv.SerializePartialToArray(buff, size);
+	SendPacket(buff, size, C2C_Opcode::C2C_HAND, clientId);
+	std::thread t = std::thread(std::bind(&UdpSocketClient::AsyncWait, this, clientId));
+}
+void UdpSocketClient::Start(boost::asio::ip::address&& addr, uint16 port, int32 punch_client, uint16_t native_client)
+{
+	try {
+
+		boost::asio::ip::address local_addr = boost::asio::ip::address::from_string("127.0.0.1");
+		boost::asio::ip::udp::endpoint local_add(local_addr, 12006 + native_client);
+
+		_socket->open(local_add.protocol());
+		_socket->bind(local_add);
+
+		_socket->set_option(boost::asio::socket_base::reuse_address(true));
+		//-1是服务器
+		sClientSocketMgr->OnConnectRemote(-1, udp::endpoint(addr, port + 302));
+		SkyDream::C2S_Punch punch;
+		punch.set_from(native_client);
+		punch.set_to(punch_client);
+		char buff[32] = { 0 };
+		int16 size = punch.ByteSize();
+		punch.SerializePartialToArray(buff, size);
+		SendPacket(buff, size, C2S_Opcode::C2S_PUNCH, -1);
+		AsyncRead();
+	}
+	catch (boost::system::error_code &err)
+	{
+		std::cout << "exception  " << err.message() << std::endl;
+	}
+}
 ReadDataHandlerResult UdpSocketClient::ReadDataHandler()
 {
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(_headerBuffer.GetReadPointer());
@@ -10,7 +51,8 @@ ReadDataHandlerResult UdpSocketClient::ReadDataHandler()
 	{
 		SkyDream::Person remote;
 		remote.ParseFromArray(_packetBuffer.GetReadPointer(), _packetBuffer.GetActiveSize());
-		sClientSocketMgr->client->StartC2CConnection(remote.ip().c_str(), remote.port());
+		//Start()
+		StartC2C(remote.ip().c_str(), remote.port(), remote.clientid());
 		break;
 	}
 	case C2C_Opcode::C2C_HAND:
@@ -33,4 +75,59 @@ ReadDataHandlerResult UdpSocketClient::ReadDataHandler()
 	}
 
 	return ReadDataHandlerResult::Ok;
+}
+
+bool UdpSocketClient::AsyncProcessQueue()
+{
+	if (_isWritingAsync)
+		return false;
+
+	_isWritingAsync = true;
+
+#ifdef SD_SOCKET_USE_IOCP
+	MessageBuffer& buffer = _writeQueue.front().buffer;
+	udp::endpoint ed;
+	if (!sClientSocketMgr->GetEndPointOf(_writeQueue.front().clientId, ed))
+	{
+		std::cout << "client does not exist connection of " << _writeQueue.front().clientId << std::endl;
+		WriteHandler(boost::system::error_code(), _writeQueue.front().buffer.GetActiveSize());
+		return true;
+	}
+	std::cout << "send data to " << ed << " ,size:" << buffer.GetActiveSize() << std::endl;
+	_socket->async_send_to(boost::asio::buffer(buffer.GetReadPointer(), buffer.GetActiveSize()), ed, \
+		boost::bind(&UdpSocketClient::WriteHandler, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+#else
+	_socket.async_write_some(boost::asio::null_buffers(), std::bind(&TCPSocket<T>::WriteHandlerWrapper,
+		this->shared_from_this(), std::placeholders::_1, std::placeholders::_2));
+#endif
+
+	return false;
+}
+
+void UdpSocketClient::ReadHandlerInternal(boost::system::error_code error, size_t transferredBytes)
+
+{
+	std::cout << "read data " << error.message().c_str() << "\t size :" << transferredBytes << " from " << _receiveEndpoint << std::endl;
+	if (error)
+	{
+		//CloseSocket();
+		//Sleep(1000);
+		SkyDream::IntValue iv;
+		iv.set_value(0);
+		char buff[16] = { 0 };
+		int16 size = iv.ByteSize();
+		iv.SerializePartialToArray(buff, size);
+		int32 clientId = -202;
+		if (!sClientSocketMgr->GetClientIdOf(_remoteEndpoint, clientId))
+		{
+			std::cout << "error 202" << std::endl;
+			return;
+		}
+		SendPacket(buff, size, C2C_Opcode::C2C_HAND, clientId);
+		AsyncRead();
+		return;
+	}
+
+	_readBuffer.WriteCompleted(transferredBytes);
+	ReadHandler();
 }

@@ -5,23 +5,23 @@
 ClientSocket::ClientSocket(tcp::socket * socket)
 	:_io(&socket->get_io_service()),
 	TCPSocket(std::move(socket)),
-	_c2sSocket(nullptr),
-	_c2cSocket(nullptr),
+	_udpSocket(nullptr),
 	_sendBufferSize(4096),
 	_c2cClosed(true)
 {
 	_remoteEndpoint = boost::asio::ip::address::from_string("127.0.0.1");
 	_headerBuffer.Resize(sizeof(PacketHeader));
+	ComfirmUdp(_socket->get_io_service());
 }
 
 ClientSocket::~ClientSocket()
 {
-	if (nullptr != _c2cSocket)
+	if (nullptr != _udpSocket)
 	{
-		if (_c2cSocket->IsOpen())
-			_c2cSocket->CloseSocket();
-		delete _c2cSocket;
-		_c2cSocket = nullptr;
+		if (_udpSocket->IsOpen())
+			_udpSocket->CloseSocket();
+		delete _udpSocket;
+		_udpSocket = nullptr;
 	}
 }
 
@@ -137,11 +137,14 @@ ReadDataHandlerResult ClientSocket::ReadDataHandler()
 		SkyDream::IntValue remote;
 		remote.ParseFromArray(_packetBuffer.GetReadPointer(), _packetBuffer.GetActiveSize());
 
-		UdpSocketClient* client = new UdpSocketClient(_socket->get_io_service());
-		std::cout << "try connect to client " << remote.value() << std::endl;
-		client->name = std::move("native udp client");
-		client->Start(this->GetRemoteIpAddress(), this->GetRemotePort(), remote.value(),_clientId);
-		_c2sSocket = client;
+
+		if (nullptr == _udpSocket)
+		{
+			UdpSocketClient* client = new UdpSocketClient(_socket->get_io_service());
+			std::cout << "try connect to client " << remote.value() << std::endl;
+			_udpSocket->name = std::move("native udp client");
+		}
+		_udpSocket->Start(this->GetRemoteIpAddress(), this->GetRemotePort(), remote.value(),_clientId);
 		break;
 	}
 	//list
@@ -155,21 +158,21 @@ ReadDataHandlerResult ClientSocket::ReadDataHandler()
 			std::cout << p.ip() << "\t" << p.port() << "\t" << p.clientid() << std::endl;
 			if (p.clientid() == _clientId)
 				continue;
-			std::cout << "try connect to client " << p.clientid() << std::endl;
-			_c2sSocket->Start(this->GetRemoteIpAddress(), this->GetRemotePort(), p.clientid(),_clientId);
-			return ReadDataHandlerResult::Ok;
+			std::cout<<_clientId << "  try connect to client " << p.clientid() << std::endl;
+			_udpSocket->Start(this->GetRemoteIpAddress(), this->GetRemotePort(), p.clientid(),_clientId);
+			return ReadDataHandlerResult::Ok; 
 		}
 		std::cout << "no other client connected to server " << std::endl;
 		Sleep(3000);
 		char data[] = { 0 };
 		size_t size = 0;
 		SendPacket(data, size, C2S_Opcode::C2S_CLIST);
-		if (nullptr == _c2sSocket)
+		if (nullptr == _udpSocket)
 		{
 			UdpSocketClient* client = new UdpSocketClient(_socket->get_io_service());
 			client->name = std::move("native udp client");
 			client->Start(this->GetRemoteIpAddress(), this->GetRemotePort(),0,0);
-			_c2sSocket = client;
+			_udpSocket = client;
 		}
 		break;
 	}
@@ -208,17 +211,6 @@ void ClientSocket::SendPacket(const char * packet, size_t size, int cmd)
 	QueuePacket(std::move(buffer));
 }
 
-void ClientSocket::StartC2CConnection(const char * addr, uint16 port)
-{
-	if (nullptr == _c2sSocket)
-	{
-		return;
-		_c2sSocket = nullptr;
-	}
-	std::cout << "StartC2CConnection" << std::endl;
-	_c2sSocket->Start(addr, port);
-}
-
 void ClientSocket::AsyncConnectCallback(const boost::system::error_code & er)
 {
 	string connect_info = name + "   connect ret :" + er.message() + "\n";
@@ -240,6 +232,5 @@ void ClientSocket::AsyncConnectCallback(const boost::system::error_code & er)
 	}
 	else
 	{
-		sClientSocketMgr->OnConnectFail(this, _remoteEndpoint, _remotePort);
 	}
 }

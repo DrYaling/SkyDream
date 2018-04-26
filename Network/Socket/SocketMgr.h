@@ -24,7 +24,7 @@ template<class T>
 class SocketMgr
 {
 public:
-	SocketMgr(size_t socketCount) :_io_service(1), _io_work(_io_service), _connections(0)
+	SocketMgr(size_t socketCount) :_io_service(1), _io_work(_io_service)
 	{
 		for (auto i = 0; i < socketCount; i++)
 		{
@@ -39,11 +39,6 @@ public:
 	}
 	void Update()
 	{
-		for (auto s : _connections)
-		{
-			if (s)
-				s->Update();
-		}
 	}
 	boost::asio::ip::tcp::socket* GetSocket()
 	{
@@ -59,14 +54,6 @@ public:
 		}
 		return new  boost::asio::ip::tcp::socket(_io_service);
 	}
-	void OnSocketConnect(TCPSocket<T>* sock)
-	{
-		_connections.push_back(sock);
-	}
-	vector<TCPSocket<T>*> GetConnections() const
-	{
-		return _connections;
-	}
 	bool ReleaseSocket(boost::asio::ip::tcp::socket* socket)
 	{
 		for (auto sock : m_vSockets)
@@ -79,8 +66,6 @@ public:
 		}
 		return false;
 	}
-protected:
-	std::vector<TCPSocket<T>*> _connections;
 private:
 	void Io_Service_Worker()
 	{

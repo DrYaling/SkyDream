@@ -6,6 +6,19 @@ public:
 	int32 from_;
 	int32 to_;
 };
+struct udpSocketWriteBuffer
+{
+public:
+	MessageBuffer buffer;
+	int32 clientId;
+
+	explicit udpSocketWriteBuffer(int32 id, MessageBuffer& _buffer) :
+		clientId(id),
+		buffer(_buffer)
+	{
+
+	}
+};
 enum S2C_Opcode 
 {
 	S2C_PUNCH = 301,//通知客户端进行打洞

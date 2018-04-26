@@ -54,8 +54,6 @@ public:
 		}
 		return true;
 	}
-	//template<class T>
-	void AsyncAccept();
 
 	template<AcceptCallback acceptCallback>
 	void AsyncAcceptWithCallback()
@@ -92,28 +90,4 @@ private:
 	bool _closed;
 	bool _closing;
 };
-//template<class T>
-void AsyncAcceptor::AsyncAccept()
-{
-	tcp::socket* _socket = new tcp::socket(_acceptor.get_io_service());
-	_acceptor.async_accept(*_socket, [this, _socket](boost::system::error_code error)
-	{
-		if (!error)
-		{
-			try
-			{
-				_socket->non_blocking(true);
-			}
-			catch (boost::system::system_error const& err)
-			{
-				//std::string msg = "Failed to retrieve client's remote address " + err.what();
-				std::cout << "Failed to retrieve client's remote address "<<err.what() << std::endl;
-			}
-		}
-
-		// lets slap some more this-> on this so we can fix this bug with gcc 4.7.2 throwing internals in yo face
-		if (!_closed)
-			this->AsyncAccept();
-	});
-}
 #endif

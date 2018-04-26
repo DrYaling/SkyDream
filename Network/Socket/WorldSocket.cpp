@@ -29,8 +29,6 @@ void WorldSocket::Start()
 	auto size = iv.ByteSize();
 	iv.SerializeToArray(data, size);
 	SendPacket(data, size, S2C_Opcode::S2C_CLIENT_ID);
-	_udpSocket = new UdpSocketServer(_socket->get_io_service());
-	_udpSocket->Start(_socket->local_endpoint().address(), _socket->local_endpoint().port(), _clientId);
 	AsyncRead();
 	//_queryProcessor.AddQuery(LoginDatabase.AsyncQuery(stmt).WithPreparedCallback(std::bind(&WorldSocket::CheckIpCallback, this, std::placeholders::_1)));
 }
@@ -210,7 +208,7 @@ ReadDataHandlerResult WorldSocket::ReadDataHandler()
 		SkyDream::ListConn conn;
 		for (auto c : connections)
 		{
-			WorldSocket* w = dynamic_cast<WorldSocket*>(c);
+			WorldSocket* w = c.second;
 			if (!w)
 				continue;
 			SkyDream::Person* person = conn.add_persons();

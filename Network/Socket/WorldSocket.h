@@ -61,14 +61,5 @@ private:
 	//QueryCallbackProcessor _queryProcessor;
 
 	std::string _ipCountry;
-protected:
-	//服务器保持常开
-	//客户端在需要打洞的时候和服务器连接，打洞确认后断开
-	UdpSocketServer * _udpSocket;
-public:
-	UdpSocketServer * GetUdpSocket() const
-	{
-		return _udpSocket;
-	}
 };
 #endif
