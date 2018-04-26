@@ -103,3 +103,93 @@
 /SkyDream/x64/Debug/Test.exe
 /SkyDream/x64/Debug/Test.ilk
 /SkyDream/x64/Debug/Test.pdb
+/SkyDream/.vs/SkyDream/v15/ipch/AutoPCH/1c20986252f0b6be/MAIN.ipch
+/SkyDream/.vs/SkyDream/v15/ipch/AutoPCH/7c0754e205830bf7/UDPSOCKETSERVER.ipch
+/SkyDream/.vs/SkyDream/v15/ipch/AutoPCH/8050840a59c8c43a/UDPSOCKET.ipch
+/SkyDream/.vs/SkyDream/v15/ipch/AutoPCH/9dae07d2f886de10/PUNCH.PB.ipch
+/SkyDream/.vs/SkyDream/v15/ipch/AutoPCH/bcc33c265c203aaf/CLIENT.ipch
+/SkyDream/.vs/SkyDream/v15/ipch/AutoPCH/d3d176dab845796b/UDPSOCKETCLIENT.ipch
+/SkyDream/.vs/SkyDream/v15/ipch/AutoPCH/daaca34df404e8c1/EXTENSION_SET.ipch
+/SkyDream/.vs/SkyDream/v15/ipch/AutoPCH/e2eda8f0b6f57c38/MAIN.ipch
+/SkyDream/.vs/SkyDream/v15/ipch/AutoPCH/fade6268eb58e5d9/WORLDSOCKETMGR.ipch
+/SkyDream/client1/x64/Debug/Client1.log
+/SkyDream/client1/x64/Debug/Client1.tlog/CL.command.1.tlog
+/SkyDream/client1/x64/Debug/Client1.tlog/CL.read.1.tlog
+/SkyDream/client1/x64/Debug/Client1.tlog/CL.write.1.tlog
+/SkyDream/client1/x64/Debug/Client1.tlog/Client1.lastbuildstate
+/SkyDream/client1/x64/Debug/Client1.tlog/link.command.1.tlog
+/SkyDream/client1/x64/Debug/Client1.tlog/link.read.1.tlog
+/SkyDream/client1/x64/Debug/Client1.tlog/link.write.1.tlog
+/SkyDream/client1/x64/Debug/Main.obj
+/SkyDream/client1/x64/Debug/vc141.idb
+/SkyDream/client1/x64/Debug/vc141.pdb
+/SkyDream/Network/x64/Debug/Client.obj
+/SkyDream/Network/x64/Debug/UdpSocket.obj
+/SkyDream/Network/x64/Debug/UdpSocketClient.obj
+/SkyDream/Network/x64/Debug/UdpSocketServer.obj
+/SkyDream/Network/x64/Debug/WorldSocketMgr.obj
+/SkyDream/P2P/x64/Debug/P2P.idb
+/SkyDream/P2P/x64/Debug/P2P.log
+/SkyDream/P2P/x64/Debug/p2p.obj
+/SkyDream/P2P/x64/Debug/P2P.pdb
+/SkyDream/P2P/x64/Debug/P2P.tlog/CL.command.1.tlog
+/SkyDream/P2P/x64/Debug/P2P.tlog/CL.read.1.tlog
+/SkyDream/P2P/x64/Debug/P2P.tlog/CL.write.1.tlog
+/SkyDream/P2P/x64/Debug/P2P.tlog/Lib.command.1.tlog
+/SkyDream/P2P/x64/Debug/P2P.tlog/Lib-link.read.1.tlog
+/SkyDream/P2P/x64/Debug/P2P.tlog/Lib-link.write.1.tlog
+/SkyDream/P2P/x64/Debug/P2P.tlog/P2P.lastbuildstate
+/SkyDream/Proto/x64/Debug/punch.pb.obj
+/SkyDream/SkyDream/x64/Debug/Main.obj
+/SkyDream/SkyDream/x64/Debug/SkyDream.log
+/SkyDream/SkyDream/x64/Debug/SkyDream.tlog/CL.command.1.tlog
+/SkyDream/SkyDream/x64/Debug/SkyDream.tlog/CL.read.1.tlog
+/SkyDream/SkyDream/x64/Debug/SkyDream.tlog/CL.write.1.tlog
+/SkyDream/SkyDream/x64/Debug/SkyDream.tlog/link.command.1.tlog
+/SkyDream/SkyDream/x64/Debug/SkyDream.tlog/link.read.1.tlog
+/SkyDream/SkyDream/x64/Debug/SkyDream.tlog/link.write.1.tlog
+/SkyDream/SkyDream/x64/Debug/SkyDream.tlog/SkyDream.lastbuildstate
+/SkyDream/SkyDream/x64/Debug/vc141.idb
+/SkyDream/SkyDream/x64/Debug/vc141.pdb
+/SkyDream/x64/Debug - 副本/Client1.exe
+/SkyDream/x64/Debug - 副本/Client1.ilk
+/SkyDream/x64/Debug - 副本/Client1.pdb
+/SkyDream/x64/Debug - 副本/Network.lib
+/SkyDream/x64/Debug - 副本/Network.pdb
+/SkyDream/x64/Debug - 副本/P2P.lib
+/SkyDream/x64/Debug - 副本/P2P.pdb
+/SkyDream/x64/Debug - 副本/Proto.lib
+/SkyDream/x64/Debug - 副本/Proto.pdb
+/SkyDream/x64/Debug - 副本/Protobuf.lib
+/SkyDream/x64/Debug - 副本/Protobuf.pdb
+/SkyDream/x64/Debug - 副本/SkyDream.exe
+/SkyDream/x64/Debug - 副本/SkyDream.ilk
+/SkyDream/x64/Debug - 副本/SkyDream.pdb
+/SkyDream/x64/Debug - 副本/Test.exe
+/SkyDream/x64/Debug - 副本/Test.ilk
+/SkyDream/x64/Debug - 副本/Test.pdb
+/SkyDream/x64/Debug/Client1.exe
+/SkyDream/x64/Debug/Client1.ilk
+/SkyDream/x64/Debug/Client1.pdb
+/SkyDream/x64/Debug/P2P.lib
+/SkyDream/x64/Debug/P2P.pdb
+/SkyDream/x64/Debug/SkyDream.exe
+/SkyDream/x64/Debug/SkyDream.ilk
+/SkyDream/x64/Debug/SkyDream.pdb
+/SkyDream/x64/server/Client1.exe
+/SkyDream/x64/server/Client1.ilk
+/SkyDream/x64/server/Client1.pdb
+/SkyDream/x64/server/Network.lib
+/SkyDream/x64/server/Network.pdb
+/SkyDream/x64/server/P2P.lib
+/SkyDream/x64/server/P2P.pdb
+/SkyDream/x64/server/Proto.lib
+/SkyDream/x64/server/Proto.pdb
+/SkyDream/x64/server/Protobuf.lib
+/SkyDream/x64/server/Protobuf.pdb
+/SkyDream/x64/server/SkyDream.exe
+/SkyDream/x64/server/SkyDream.ilk
+/SkyDream/x64/server/SkyDream.pdb
+/SkyDream/x64/server/Test.exe
+/SkyDream/x64/server/Test.ilk
+/SkyDream/x64/server/Test.pdb

@@ -10,7 +10,7 @@ static void OnSocketAccept(tcp::socket* sock)
 void WorldSocketMgr::StartUp()
 {
 	auto sock = GetSocket();
-	_acceptor = new AsyncAcceptor(sock, "118.113.200.77", 8081);
+	_acceptor = new AsyncAcceptor(sock, "", 8081);
 	if (!_acceptor->Bind())
 		std::cout << "error acceptor bind fail" << std::endl;
 	_acceptor->AsyncAcceptWithCallback<&OnSocketAccept>();
