@@ -1,20 +1,19 @@
 #include "WorldSocketMgr.h"
-static void OnSocketAccept(tcp::socket* sock)
+static void OnSocketAccept(std::shared_ptr<tcp::socket> sock)
 {
 	//sWorldSocketMgr.OnSocketOpen(std::forward<tcp::socket>(sock), threadIndex);
 	std::cout << "server accept callback " << sock->remote_endpoint() << std::endl;
-	WorldSocket* conn = new WorldSocket(sock);
+	WorldSocket* conn = new WorldSocket(std::move(sock));
 	conn->Start();
 	sWorldSocketMgr->OnSocketConnect(conn);
 }
 void WorldSocketMgr::StartUp()
 {
-	auto sock = GetSocket();
-	_acceptor = new AsyncAcceptor(sock, "118.113.200.77", 8081);
+	_acceptor = std::make_shared<AsyncAcceptor>(_io_service, "118.113.200.77", 8081);
 	if (!_acceptor->Bind())
 		std::cout << "error acceptor bind fail" << std::endl;
 	_acceptor->AsyncAcceptWithCallback<&OnSocketAccept>();
-	_udpServer = new UdpSocketServer(sock->get_io_service());
+	_udpServer = std::make_shared<UdpSocketServer>(_io_service);
 	_udpServer->Start(_acceptor->GetBindAddress(), _acceptor->GetBindPort());
 	boost::asio::ip::tcp::endpoint local_endp;
 	auto endpoint = GetEndpoint(local_endp);

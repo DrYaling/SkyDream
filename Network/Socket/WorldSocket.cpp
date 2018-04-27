@@ -6,8 +6,8 @@
 #include "Opcode/Opcode.h"
 using boost::asio::ip::tcp;
 
-WorldSocket::WorldSocket(tcp::socket* socket)
-	: TCPSocket(socket), _OverSpeedPings(0), _session(nullptr), _authed(false), _sendBufferSize(4096)
+WorldSocket::WorldSocket(std::shared_ptr<tcp::socket>&& socket)
+	: TCPSocket(std::move(socket)), _OverSpeedPings(0), _session(nullptr), _authed(false), _sendBufferSize(4096)
 {
 	_clientId = -1;
 	_headerBuffer.Resize(sizeof(PacketHeader));
@@ -75,6 +75,7 @@ void WorldSocket::OnClose()
 	{
 		std::lock_guard<std::mutex> sessionGuard(_worldSessionLock);
 		_session = nullptr;
+		sWorldSocketMgr->OnSocketClosed(_clientId);
 	}
 }
 void WorldSocket::WritePacketToBuffer(EncryptablePacket const& packet, MessageBuffer& buffer)

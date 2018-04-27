@@ -12,10 +12,10 @@ using namespace boost::asio::ip;
 #endif
 class AsyncAcceptor
 {
-	typedef void(*AcceptCallback)(tcp::socket* newSocket);
+	typedef void(*AcceptCallback)(std::shared_ptr<tcp::socket> newSocket);
 public:
-	explicit AsyncAcceptor(tcp::socket* socket,const char* addr, int16_t port):
-		_acceptor(socket->get_io_service()),_endpoint(boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
+	explicit AsyncAcceptor(boost::asio::io_service& service,const char* addr, int16_t port):
+		_acceptor(service),_endpoint(boost::asio::ip::tcp::endpoint(boost::asio::ip::tcp::v4(), port)),
 		_closed(false),_closing(false)
 	{
 	}
@@ -58,7 +58,7 @@ public:
 	template<AcceptCallback acceptCallback>
 	void AsyncAcceptWithCallback()
 	{
-		tcp::socket* _socket = new tcp::socket(_acceptor.get_io_service());
+		auto _socket = std::make_shared<tcp::socket>(_acceptor.get_io_service());
 		_acceptor.async_accept(*_socket, [this,_socket](boost::system::error_code error)
 		{
 			if (!error)

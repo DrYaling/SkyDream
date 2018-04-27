@@ -24,8 +24,8 @@ public:
 	}
 	void StartUp()
 	{
-		tcp::socket * sock = GetSocket();
-		_client = new  ClientSocket(sock);
+		std::shared_ptr<tcp::socket> sock = GetSocket();
+		_client = new  ClientSocket(std::move(sock));
 		_client->name = std::move("native client");
 		Sleep(500);
 		//_client->Start("118.113.200.77", 8081);

@@ -27,6 +27,7 @@ public:
 	explicit UdpSocketClient(boost::asio::io_service& service) :
 		_socket(std::make_shared<udp::socket>(service)),
 		_readBuffer(),
+		_connectingMapLock(),
 		_punchWaitList(),
 		_closed(false),
 		_closing(false),
@@ -36,6 +37,7 @@ public:
 		_handTryCount(6),
 		name()
 	{
+		std::lock_guard<std::mutex> _lock_guard(_connectingMapLock);
 		_connectingMap.clear();
 		_readBuffer.Resize(READ_BLOCK_SIZE);
 		_headerBuffer.Resize(sizeof(PacketHeader));
@@ -53,21 +55,25 @@ public:
 	void Punch(boost::asio::ip::address&& addr, uint16 port, int32 punch_client, uint16_t native_client);
 	void AsyncWait(int32 clientId)
 	{
-		while (_handTryCount > 0)
+		while (true)
 		{
-			_handTryCount--;
 			Sleep(1000);
-			auto itr = _connectingMap.find(clientId);
-			if (itr == _connectingMap.end())
 			{
-				return;
-			}
-			else if (itr->second)
-			{
+				std::lock_guard<std::mutex> _lock_guard(_connectingMapLock);
+				auto itr = _connectingMap.find(clientId);
+				if (itr == _connectingMap.end())
+				{
+					return;
+				}
+				int16 waitCount = itr->second;
+				waitCount--;
 				_connectingMap.erase(itr);
-				return;
+				if (waitCount <= 0)
+				{
+					break;
+				}
+				_connectingMap.insert(std::pair<int32, int16>(clientId, waitCount));
 			}
-
 			SkyDream::IntValue iv;
 			iv.set_value(0);
 			char buff[16] = { 0 };
@@ -345,7 +351,8 @@ private:
 	int16 _handTryCount;
 
 	bool _isWritingAsync;
-	std::map<int32, bool> _connectingMap;
+	std::map<int32, int16> _connectingMap;
+	std::mutex _connectingMapLock;
 	int32 _clientId;
 };
 

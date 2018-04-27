@@ -25,8 +25,7 @@ class WorldSocket : public TCPSocket<WorldSocket>
 	typedef TCPSocket<WorldSocket> BaseSocket;
 
 public:
-	WorldSocket(tcp::socket* socket);
-
+	WorldSocket(std::shared_ptr<tcp::socket>&& socket);
 	WorldSocket(WorldSocket const& right) = delete;
 	WorldSocket& operator=(WorldSocket const& right) = delete;
 

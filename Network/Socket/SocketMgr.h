@@ -9,17 +9,6 @@
 #include <iostream>
 #include "TCPSocket.h"
 using namespace std;
-struct SocketInstance {
-public:
-	bool isAvaliable;
-	boost::asio::ip::tcp::socket* socket;
-	explicit SocketInstance(boost::asio::ip::tcp::socket* sock) :socket(std::move(sock)), isAvaliable(true)
-	{
-	}
-	SocketInstance(const SocketInstance& from) :isAvaliable(from.isAvaliable), socket(std::move(from.socket))
-	{
-	}
-};
 template<class T>
 class SocketMgr
 {
@@ -28,7 +17,7 @@ public:
 	{
 		for (auto i = 0; i < socketCount; i++)
 		{
-			m_vSockets.push_back(SocketInstance(new  boost::asio::ip::tcp::socket(_io_service)));
+			m_vSockets.push_back(std::make_shared<boost::asio::ip::tcp::socket>(_io_service));
 		}
 		std::thread thread(std::bind(&SocketMgr::Io_Service_Worker, this));
 		thread.detach();
@@ -40,32 +29,15 @@ public:
 	void Update()
 	{
 	}
-	boost::asio::ip::tcp::socket* GetSocket()
+	std::shared_ptr<boost::asio::ip::tcp::socket> GetSocket()
 	{
-		for (auto sock = m_vSockets.begin(); sock != m_vSockets.end(); sock++)
-		{
-			if ((*sock).isAvaliable)
-			{
-				(*sock).isAvaliable = false;
-				auto ret = (*sock).socket;
-				m_vSockets.erase(sock);
-				return ret;
-			}
-		}
-		return new  boost::asio::ip::tcp::socket(_io_service);
+		auto itr = m_vSockets.begin();
+		if (itr != m_vSockets.end())
+			return *itr;
+		return std::make_shared<tcp::socket>(_io_service);
 	}
-	bool ReleaseSocket(boost::asio::ip::tcp::socket* socket)
-	{
-		for (auto sock : m_vSockets)
-		{
-			if (!sock.isAvaliable && socket == sock.socket)
-			{
-				sock.isAvaliable = true;
-				return true;
-			}
-		}
-		return false;
-	}
+protected:
+	boost::asio::io_service _io_service;
 private:
 	void Io_Service_Worker()
 	{
@@ -73,8 +45,7 @@ private:
 		_io_service.run();
 		//std::cout << "IO_SREVICE_WORKER END" << std::endl;
 	}
-	std::vector<SocketInstance> m_vSockets;
-	boost::asio::io_service _io_service;
+	std::vector<std::shared_ptr<tcp::socket>> m_vSockets;
 	boost::asio::io_service::work _io_work;
 
 };

@@ -15,15 +15,33 @@ std::vector<WorldSocket*> _p2pConnections;
 void ThreadAccepter()
 {
 	//创建客户端监听
-	tcp::socket * sock = sClientSocketMgr->GetSocket();
+	auto sock = sClientSocketMgr->GetSocket();
 	//创建客户端连接
-	auto client = new  ClientSocket(sock);
+	auto client = new  ClientSocket(std::move(sock));
 	client->name = std::move("native client");
 	Sleep(500);
-	client->Start("118.113.200.77", 8081);
-	//client->Start("127.0.0.1", 8081);
+	//client->Start("118.113.200.77", 8081);
+	client->Start("127.0.0.1", 8081);
 	while (1)
 	{
+		int ret;
+		std::cin >> ret;
+		switch (ret)
+		{
+		case 0:
+		{
+			if (client->IsOpen())
+				client->CloseSocket();
+			break;
+		}
+		case 1:
+		{
+			if (!client->IsOpen())
+				client->Start("127.0.0.1", 8081);
+			break;
+		}
+		}
+
 		Sleep(16);
 	}
 	client->CloseSocket();

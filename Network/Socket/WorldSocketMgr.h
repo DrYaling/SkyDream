@@ -27,12 +27,10 @@ public:
 		if (nullptr != _acceptor)
 		{
 			_acceptor->Stop();
-			delete _acceptor;
 		}
 		if (nullptr != _udpServer)
 		{
 			_udpServer->CloseSocket();
-			delete _udpServer;
 		}
 	}
 	//Æô¶¯
@@ -41,6 +39,12 @@ public:
 	void OnSocketConnect(WorldSocket* sock)
 	{
 		_connections.insert(std::pair<int32,WorldSocket*>(sock->GetClientId(),sock));
+	}
+	void OnSocketClosed(int32 clientId)
+	{
+		auto itr = _connections.find(clientId);
+		if (itr != _connections.end())
+			_connections.erase(itr);
 	}
 	std::map<int32, WorldSocket*> GetConnections() const
 	{
@@ -101,8 +105,8 @@ public:
 		}
 	}
 private :
-	AsyncAcceptor* _acceptor;
-	UdpSocketServer* _udpServer;
+	std::shared_ptr<AsyncAcceptor> _acceptor;
+	std::shared_ptr<UdpSocketServer> _udpServer;
 	std::map<int32, WorldSocket*> _connections;
 	std::map<int32, boost::asio::ip::udp::endpoint> _udpConnectionMap;
 };

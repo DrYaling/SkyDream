@@ -2,7 +2,7 @@
 #include "proto/punch.pb.h"
 #include "ClientSocketMgr.h"
 #include "Opcode/Opcode.h"
-ClientSocket::ClientSocket(tcp::socket * socket)
+ClientSocket::ClientSocket(std::shared_ptr<tcp::socket>&& socket)
 	:_io(&socket->get_io_service()),
 	TCPSocket(std::move(socket)),
 	_udpSocket(nullptr),
@@ -19,7 +19,6 @@ ClientSocket::~ClientSocket()
 	{
 		if (_udpSocket->IsOpen())
 			_udpSocket->CloseSocket();
-		delete _udpSocket;
 		_udpSocket = nullptr;
 	}
 }
