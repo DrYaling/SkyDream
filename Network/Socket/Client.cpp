@@ -31,6 +31,14 @@ void ClientSocket::Start(const char* url, uint16_t port)
 	_remoteEndpoint = boost::asio::ip::address::from_string(url);
 	_remotePort = port;
 	auto ed = boost::asio::ip::tcp::endpoint(_remoteEndpoint, port);
+	boost::system::error_code er;
+	//_socket->set_option(boost::asio::socket_base::reuse_address(true));
+	//_socket->open(ed.protocol());
+	//_socket->bind(ed,er);
+	if (er)
+	{
+		std::cout << er.message() << std::endl;
+	}
 	_socket->async_connect(ed, boost::bind(&ClientSocket::AsyncConnectCallback, this, boost::asio::placeholders::error));
 }
 void ClientSocket::Start()

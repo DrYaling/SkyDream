@@ -197,7 +197,7 @@ ReadDataHandlerResult UdpSocketServer::ReadDataHandler()
 		auto connections = sWorldSocketMgr->GetConnections();
 		for (auto c : connections)
 		{
-			WorldSocket* w = c.second;
+			auto w = c.second;
 			if (w)
 			{
 				if (w->GetClientId() == punch.from())

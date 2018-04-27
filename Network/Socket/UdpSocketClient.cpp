@@ -8,7 +8,7 @@ void UdpSocketClient::Bind(boost::asio::ip::address&& addr, uint16 port, int32 c
 	_socket->open(endpoint.protocol());
 	_socket->bind(endpoint);
 	_clientId = clientId;
-	//_socket->set_option(boost::asio::socket_base::reuse_address(true));
+	_socket->set_option(boost::asio::socket_base::reuse_address(true));
 	AsyncRead();
 }
 void UdpSocketClient::StartC2C(const char * addr, uint16_t port, int32 clientId)//开始做c-c连接

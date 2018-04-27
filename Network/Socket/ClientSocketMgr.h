@@ -25,7 +25,7 @@ public:
 	void StartUp()
 	{
 		std::shared_ptr<tcp::socket> sock = GetSocket();
-		_client = new  ClientSocket(std::move(sock));
+		_client = std::make_shared<ClientSocket>(std::move(sock));
 		_client->name = std::move("native client");
 		Sleep(500);
 		//_client->Start("118.113.200.77", 8081);
@@ -37,7 +37,6 @@ public:
 		{
 			if (_client->IsOpen())
 				_client->CloseSocket();
-			delete _client;
 			_client = nullptr;
 		}
 	}
@@ -87,6 +86,6 @@ public:
 	}
 public :
 	std::map<int32, boost::asio::ip::udp::endpoint> _udpConnectionMap;
-	ClientSocket* _client;
+	std::shared_ptr<ClientSocket> _client;
 };
 #endif

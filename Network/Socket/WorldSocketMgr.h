@@ -36,9 +36,9 @@ public:
 	//Æô¶¯
 	void StartUp();
 	void Stop();
-	void OnSocketConnect(WorldSocket* sock)
+	void OnSocketConnect(std::shared_ptr<WorldSocket> sock)
 	{
-		_connections.insert(std::pair<int32,WorldSocket*>(sock->GetClientId(),sock));
+		_connections.insert(std::pair<int32,std::shared_ptr<WorldSocket>>(sock->GetClientId(),sock));
 	}
 	void OnSocketClosed(int32 clientId)
 	{
@@ -46,7 +46,7 @@ public:
 		if (itr != _connections.end())
 			_connections.erase(itr);
 	}
-	std::map<int32, WorldSocket*> GetConnections() const
+	std::map<int32, std::shared_ptr<WorldSocket>> GetConnections() const
 	{
 		return _connections;
 	}
@@ -55,7 +55,7 @@ public:
 		auto itr = _connections.find(clientId);
 		if (itr != _connections.end())
 		{
-			WorldSocket* sock = itr->second;
+			auto sock = itr->second;
 			addr = sock->GetRemoteIpAddress();
 			port = sock->GetRemotePort();
 			return true;
@@ -107,7 +107,7 @@ public:
 private :
 	std::shared_ptr<AsyncAcceptor> _acceptor;
 	std::shared_ptr<UdpSocketServer> _udpServer;
-	std::map<int32, WorldSocket*> _connections;
+	std::map<int32, std::shared_ptr<WorldSocket>> _connections;
 	std::map<int32, boost::asio::ip::udp::endpoint> _udpConnectionMap;
 };
 #endif

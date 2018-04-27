@@ -210,7 +210,7 @@ ReadDataHandlerResult WorldSocket::ReadDataHandler()
 		SkyDream::ListConn conn;
 		for (auto c : connections)
 		{
-			WorldSocket* w = c.second;
+			auto w = c.second;
 			if (!w)
 				continue;
 			SkyDream::Person* person = conn.add_persons();
@@ -245,10 +245,5 @@ void WorldSocket::SendPacket(const char* packet, size_t size, int cmd)
 	MessageBuffer buffer(size + sizeof(header));
 	buffer.Write(&header, sizeof(header));
 	buffer.Write(packet, size);
-	//std::cout << "WorldSocket SendPacket cmd " << cmd << ",pack size " << buffer.GetActiveSize() << ",real size " << size + sizeof(header) << std::endl;
 	QueuePacket(std::move(buffer));
-	/*if (sPacketLog->CanLogPacket())
-		sPacketLog->LogPacket(packet, SERVER_TO_CLIENT, GetRemoteIpAddress(), GetRemotePort());
-
-	_bufferQueue.Enqueue(new EncryptablePacket(packet, _authCrypt.IsInitialized()));*/
 }
