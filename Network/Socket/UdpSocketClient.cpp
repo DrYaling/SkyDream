@@ -13,6 +13,15 @@ void UdpSocketClient::Bind(boost::asio::ip::address&& addr, uint16 port, int32 c
 }
 void UdpSocketClient::StartC2C(const char * addr, uint16_t port, int32 clientId)//开始做c-c连接
 {
+	//正在连接
+	{
+		std::lock_guard<std::mutex> _lock_guard(_connectingMapLock);
+		if (_connectingMap.find(clientId) != _connectingMap.end())
+		{
+			return;
+		}
+	}
+	//auto endpoint = udp::endpoint(boost::asio::ip::address::from_string("118.113.200.77"), port);
 	auto endpoint = udp::endpoint(boost::asio::ip::address::from_string(addr), port);
 	std::cout << "udp c-c ed " << endpoint << ",id " << clientId << std::endl;
 	sClientSocketMgr->OnConnectRemote(clientId, endpoint);
@@ -23,8 +32,11 @@ void UdpSocketClient::StartC2C(const char * addr, uint16_t port, int32 clientId)
 	punch.set_to(clientId);
 	int16 size = punch.ByteSize();
 	punch.SerializePartialToArray(buff, size);
-	SendPacket(buff, size, C2C_Opcode::C2C_HAND, clientId);
-	_connectingMap.insert(std::pair<int32, bool>(clientId, false));
+	SendPacket(buff, size, C2C_Opcode::C2C_HAND, clientId); 
+	{
+		std::lock_guard<std::mutex> _lock_guard(_connectingMapLock);
+		_connectingMap.insert(std::pair<int32, int16>(clientId, 6));
+	}
 	std::thread t = std::thread(std::bind(&UdpSocketClient::AsyncWait, this, clientId));
 	t.detach();
 }
@@ -77,11 +89,13 @@ ReadDataHandlerResult UdpSocketClient::ReadDataHandler()
 			std::cout << "recv hand from " << punch.from() << "fail,target endpoint is not same as cached!"<<from_ed <<","<< _receiveEndpoint << std::endl;
 			return ReadDataHandlerResult::Error;
 		}
-
-		auto itr = _connectingMap.find(punch.from());
-		if (itr != _connectingMap.end())
 		{
-			_connectingMap.erase(itr);
+			std::lock_guard<std::mutex> _lock_guard(_connectingMapLock);
+			auto itr = _connectingMap.find(punch.from());
+			if (itr != _connectingMap.end())
+			{
+				_connectingMap.erase(itr);
+			}
 		}
 		std::cout << "receive hand pack" << std::endl;
 		break;
@@ -136,20 +150,13 @@ void UdpSocketClient::ReadHandlerInternal(boost::system::error_code error, size_
 	std::cout << " udp client read data "<<error<<"," << error.message().c_str() << "\t size :" << transferredBytes << " from " << _receiveEndpoint << std::endl;
 	if (error)
 	{
-		//CloseSocket();
-		//Sleep(1000);
-		SkyDream::IntValue iv;
-		iv.set_value(0);
-		char buff[16] = { 0 };
-		int16 size = iv.ByteSize();
-		iv.SerializePartialToArray(buff, size);
 		int32 clientId = -202;
-		if (!sClientSocketMgr->GetClientIdOf(_remoteEndpoint, clientId))
+		if (!sClientSocketMgr->GetClientIdOf(_receiveEndpoint, clientId))
 		{
 			std::cout << "error 202" << std::endl;
 			return;
 		}
-		SendPacket(buff, size, C2C_Opcode::C2C_HAND, clientId);
+		StartC2C(_receiveEndpoint.address().to_string().c_str(), _receiveEndpoint.port(), clientId);
 		AsyncRead();
 		return;
 	}

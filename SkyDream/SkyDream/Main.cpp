@@ -10,14 +10,6 @@
 #include "Socket/AsyncAcceptor.h"
 #include "Socket/WorldSocketMgr.h"
 
-static void OnSocketAccept(tcp::socket* sock)
-{
-	//sWorldSocketMgr.OnSocketOpen(std::forward<tcp::socket>(sock), threadIndex);
-	std::cout << "SkyDream accept callback " << sock->remote_endpoint() << std::endl;
-	WorldSocket* conn = new WorldSocket(sock);
-	conn->Start();
-	sWorldSocketMgr->OnSocketConnect(conn);
-}
 void ThreadAccepter()
 {
 	sWorldSocketMgr->StartUp();

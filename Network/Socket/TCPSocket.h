@@ -24,7 +24,7 @@ class TCPSocket : public std::enable_shared_from_this<T>
 
 public:
 	std::string name;
-	explicit TCPSocket(tcp::socket* socket) :
+	explicit TCPSocket(std::shared_ptr<tcp::socket>&& socket) :
 		_socket(socket),
 		_readBuffer(),
 		_closed(false),
@@ -40,7 +40,8 @@ public:
 	{
 		_closed = true;
 		boost::system::error_code error;
-		_socket->close(error);
+		if (nullptr != _socket)
+			_socket->close(error);
 	}
 
 	virtual void Start() = 0;
@@ -168,7 +169,7 @@ protected:
 private:
 	void ReadHandlerInternal(boost::system::error_code error, size_t transferredBytes)
 	{
-		std::cout<<name << "  read data " << error << "\t size :" << transferredBytes << std::endl;
+		std::cout << name << "  read data " << error << "\t size :" << transferredBytes << std::endl;
 		if (error)
 		{
 			CloseSocket();
@@ -186,7 +187,7 @@ private:
 		if (!error)
 		{
 			_isWritingAsync = false;
-			std::cout << "write bytes " << transferedBytes << ",active size " << _writeQueue.front().GetActiveSize()<<" to "<<_clientId << std::endl;
+			std::cout << "write bytes " << transferedBytes << ",active size " << _writeQueue.front().GetActiveSize() << " to " << _clientId << std::endl;
 			_writeQueue.front().ReadCompleted(transferedBytes);
 			if (!_writeQueue.front().GetActiveSize())
 				_writeQueue.pop();

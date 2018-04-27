@@ -9,7 +9,7 @@ class ClientSocket :public TCPSocket<ClientSocket>
 {
 	typedef TCPSocket<ClientSocket> BaseSocket;
 public:
-	explicit ClientSocket(tcp::socket* socket);
+	ClientSocket(std::shared_ptr<tcp::socket>&& socket);
 	~ClientSocket() override;
 	ClientSocket(ClientSocket const& right) = delete;
 	ClientSocket& operator=(ClientSocket const& right) = delete;
@@ -30,16 +30,16 @@ public:
 
 		if (nullptr == _udpSocket)
 		{
-			_udpSocket = new UdpSocketClient(_socket->get_io_service());
+			_udpSocket = std::make_shared <UdpSocketClient>(_socket->get_io_service());
 			_udpSocket->name = "native udp client";
-			auto tcp_ed = udp::endpoint(boost::asio::ip::udp::v4(),_socket->local_endpoint().port());
-			_udpSocket->Bind(std::move(tcp_ed.address()), tcp_ed.port(),_clientId);
+			auto tcp_ed = udp::endpoint(boost::asio::ip::udp::v4(), _socket->local_endpoint().port());
+			_udpSocket->Bind(std::move(tcp_ed.address()), tcp_ed.port(), _clientId);
 		}
 	}
 protected:
 	void AsyncConnectCallback(const  boost::system::error_code& error);
 private:
-	UdpSocketClient * _udpSocket;
+	std::shared_ptr<UdpSocketClient> _udpSocket;
 	MessageBuffer _headerBuffer;
 	MessageBuffer _packetBuffer;
 	std::size_t _sendBufferSize;
