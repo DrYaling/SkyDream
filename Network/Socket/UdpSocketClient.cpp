@@ -13,7 +13,7 @@ void UdpSocketClient::Bind(boost::asio::ip::address&& addr, uint16 port, int32 c
 }
 void UdpSocketClient::StartC2C(const char * addr, uint16_t port, int32 clientId)//开始做c-c连接
 {
-	auto endpoint = udp::endpoint(boost::asio::ip::address::from_string(addr), port);
+	auto endpoint = udp::endpoint(boost::asio::ip::address::from_string("118.113.200.77"), port);
 	std::cout << "udp c-c ed " << endpoint << ",id " << clientId << std::endl;
 	sClientSocketMgr->OnConnectRemote(clientId, endpoint);
 	SkyDream::C2S_Punch punch;
@@ -134,20 +134,13 @@ void UdpSocketClient::ReadHandlerInternal(boost::system::error_code error, size_
 	std::cout << " udp client read data " << error.message().c_str() << "\t size :" << transferredBytes << " from " << _receiveEndpoint << std::endl;
 	if (error)
 	{
-		//CloseSocket();
-		//Sleep(1000);
-		SkyDream::IntValue iv;
-		iv.set_value(0);
-		char buff[16] = { 0 };
-		int16 size = iv.ByteSize();
-		iv.SerializePartialToArray(buff, size);
 		int32 clientId = -202;
-		if (!sClientSocketMgr->GetClientIdOf(_remoteEndpoint, clientId))
+		if (!sClientSocketMgr->GetClientIdOf(_receiveEndpoint, clientId))
 		{
 			std::cout << "error 202" << std::endl;
 			return;
 		}
-		SendPacket(buff, size, C2C_Opcode::C2C_HAND, clientId);
+		StartC2C(_receiveEndpoint.address().to_string().c_str(), _receiveEndpoint.port(), clientId);
 		AsyncRead();
 		return;
 	}
