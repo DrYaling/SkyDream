@@ -117,7 +117,9 @@ public:
 
 		_readBuffer.Normalize();
 		_readBuffer.EnsureFreeSpace();
-		_socket->async_receive_from(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace())\
+		_socket->async_receive(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace()),\
+			0, boost::bind(&UdpSocketClient::ReadHandlerInternal, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
+		//_socket->async_receive_from(boost::asio::buffer(_readBuffer.GetWritePointer(), _readBuffer.GetRemainingSpace())\
 			, _receiveEndpoint, boost::bind(&UdpSocketClient::ReadHandlerInternal, this, boost::asio::placeholders::error, boost::asio::placeholders::bytes_transferred));
 	}
 	void QueuePacket(udpSocketWriteBuffer&& buffer)

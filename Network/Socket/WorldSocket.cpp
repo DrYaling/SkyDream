@@ -216,7 +216,7 @@ ReadDataHandlerResult WorldSocket::ReadDataHandler()
 			person->set_ip(w->GetRemoteIpAddress().to_string());
 			person->set_port(w->GetRemotePort());
 			person->set_clientid(w->GetClientId());
-			std::cout << "connect client " << person->clientid() << std::endl;
+			std::cout << "list client " << person->clientid() <<","<<w->GetRemoteIpAddress()<<":"<<w->GetRemotePort()<< std::endl;
 		}
 		char data[4096] = { 0 };
 		size_t size = conn.ByteSize();

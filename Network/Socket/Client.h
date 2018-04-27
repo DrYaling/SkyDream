@@ -32,7 +32,7 @@ public:
 		{
 			_udpSocket = new UdpSocketClient(_socket->get_io_service());
 			_udpSocket->name = "native udp client";
-			auto tcp_ed = _socket->local_endpoint();
+			auto tcp_ed = udp::endpoint(boost::asio::ip::udp::v4(),_socket->local_endpoint().port());
 			_udpSocket->Bind(std::move(tcp_ed.address()), tcp_ed.port(),_clientId);
 		}
 	}
