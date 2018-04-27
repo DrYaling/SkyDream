@@ -132,6 +132,12 @@ bool ClientSocket::ReadHeaderHandler()
 	return true;
 }
 
+void ClientSocket::OnClose()
+{
+	if (nullptr != _udpSocket)
+		_udpSocket->CloseSocket();
+}
+
 ReadDataHandlerResult ClientSocket::ReadDataHandler()
 {
 	PacketHeader* header = reinterpret_cast<PacketHeader*>(_headerBuffer.GetReadPointer());
@@ -216,6 +222,8 @@ void ClientSocket::AsyncConnectCallback(const boost::system::error_code & er)
 	std::cout << connect_info.c_str();
 	if (!er)
 	{
+		_closing.exchange(false);
+		_closed.exchange(false);
 		//Start();
 		//SkyDream::Person* person = new SkyDream::Person();
 		//person->set_ip("221.10.7.226");

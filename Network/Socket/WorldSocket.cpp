@@ -73,7 +73,7 @@ bool WorldSocket::Update()
 void WorldSocket::OnClose()
 {
 	{
-		std::lock_guard<std::mutex> sessionGuard(_worldSessionLock);
+		//std::lock_guard<std::mutex> sessionGuard(_worldSessionLock);
 		_session = nullptr;
 		sWorldSocketMgr->OnSocketClosed(_clientId);
 	}

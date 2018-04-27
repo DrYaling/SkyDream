@@ -147,12 +147,14 @@ public:
 		if (_closed.exchange(true))
 			return;
 
-		boost::system::error_code shutdownError;
-		_socket->shutdown(boost::asio::socket_base::shutdown_send, shutdownError);
-		if (shutdownError)
-			std::cout << "shutdown socket fail " << shutdownError.message() << std::endl;// SD_LOG_DEBUG("network", "TCPSocket::CloseSocket: %s errored when shutting down socket: %i (%s)", GetRemoteIpAddress().to_string().c_str(),
-			//	shutdownError.value(), shutdownError.message().c_str());
-
+		boost::system::error_code err;
+		_socket->shutdown(boost::asio::socket_base::shutdown_send, err);
+		if (err)
+			std::cout << "shutdown udp socket fail " << err.message() << std::endl;// SD_LOG_DEBUG("network", "TCPSocket::CloseSocket: %s errored when shutting down socket: %i (%s)", GetRemoteIpAddress().to_string().c_str(),
+			//	err.value(), err.message().c_str());
+		_socket->close(err);
+		if (err)
+			std::cout << "udp close err " << err.message() << std::endl;
 		OnClose();
 	}
 

@@ -40,10 +40,14 @@ void ThreadAccepter()
 				client->Start("127.0.0.1", 8081);
 			break;
 		}
+		case 3:
+			client->CloseSocket();
+			goto exit_;
 		}
 
 		Sleep(16);
 	}
+	exit_:
 	client->CloseSocket();
 	delete client;
 

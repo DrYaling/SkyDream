@@ -39,9 +39,8 @@ public:
 	virtual ~TCPSocket()
 	{
 		_closed = true;
-		boost::system::error_code error;
-		if (nullptr != _socket)
-			_socket->close(error);
+		//if (nullptr != _socket)
+		//	_socket->close(error);
 	}
 
 	virtual void Start() = 0;
@@ -120,6 +119,10 @@ public:
 			std::cout << "shutdown socket fail " << shutdownError.message() << std::endl;// SD_LOG_DEBUG("network", "TCPSocket::CloseSocket: %s errored when shutting down socket: %i (%s)", GetRemoteIpAddress().to_string().c_str(),
 			//	shutdownError.value(), shutdownError.message().c_str());
 
+		boost::system::error_code error;
+		_socket->close(error);
+		if (error)
+			std::cout << "close error " << error.message() << std::endl;
 		OnClose();
 	}
 
@@ -254,11 +257,11 @@ private:
 	MessageBuffer _readBuffer;
 	std::queue<MessageBuffer> _writeQueue;
 
-	std::atomic<bool> _closed;
-	std::atomic<bool> _closing;
 	bool _isWritingAsync;
 protected:
 	int32 _clientId;
+	std::atomic<bool> _closed;
+	std::atomic<bool> _closing;
 };
 
 #endif // __SOCKET_H__
