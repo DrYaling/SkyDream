@@ -12,6 +12,7 @@
 #if WIN32
 #include <windows.h>
 #endif
+#define LOG_TO_FILE
 #ifdef LOG_TO_FILE
 #define logToFile 1
 #define splitLogFileByType 1

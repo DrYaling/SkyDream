@@ -13,6 +13,7 @@ int main()
 {
 	int i, j, flag, k;
 	LogFormat("KOCH", "%s,%d", "aaa", 32768);
+	LogFormat("KOCH1", "%s,%d", "aaa", 897);
 	GlobalLogger::Clear();
 	cin >> n;
 	pw[0] = 1;
