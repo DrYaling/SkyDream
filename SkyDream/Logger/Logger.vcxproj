@@ -20,8 +20,8 @@
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
-    <ProjectGuid>{1C403377-100F-4D7A-A5A1-B0503FB6B8B3}</ProjectGuid>
-    <RootNamespace>Network</RootNamespace>
+    <ProjectGuid>{25A5FAC2-21A3-43DD-884B-B33DE6DAEE60}</ProjectGuid>
+    <RootNamespace>Logger</RootNamespace>
     <WindowsTargetPlatformVersion>10.0.16299.0</WindowsTargetPlatformVersion>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
@@ -72,96 +72,69 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>false</SDLCheck>
+      <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../Dep;../../Dep/google;C:\local\boost_1_65_1;../../Network/</AdditionalIncludeDirectories>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp14</LanguageStandard>
-      <PreprocessorDefinitions>_MBCS;WIN32;_WINDOWS;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\local\boost_1_65_1\</AdditionalIncludeDirectories>
     </ClCompile>
+    <Lib>
+      <AdditionalLibraryDirectories>C:\local\boost_1_65_1\lib64-msvc-14.1</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>Disabled</Optimization>
-      <SDLCheck>false</SDLCheck>
+      <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../Dep;../../Dep/google;C:\local\boost_1_65_1;../../Network/</AdditionalIncludeDirectories>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp14</LanguageStandard>
-      <PreprocessorDefinitions>_MBCS;WIN32;_WINDOWS;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\local\boost_1_65_1\</AdditionalIncludeDirectories>
     </ClCompile>
+    <Lib>
+      <AdditionalLibraryDirectories>C:\local\boost_1_65_1\lib64-msvc-14.1</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>false</SDLCheck>
+      <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../Dep;../../Dep/google;C:\local\boost_1_65_1;../../Network/</AdditionalIncludeDirectories>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp14</LanguageStandard>
-      <PreprocessorDefinitions>_MBCS;WIN32;_WINDOWS;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\local\boost_1_65_1\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>C:\local\boost_1_65_1\lib64-msvc-14.1</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
-      <WarningLevel>TurnOffAllWarnings</WarningLevel>
+      <WarningLevel>Level3</WarningLevel>
       <Optimization>MaxSpeed</Optimization>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
-      <SDLCheck>false</SDLCheck>
+      <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../Dep;../../Dep/google;C:\local\boost_1_65_1;../../Network/</AdditionalIncludeDirectories>
-      <MultiProcessorCompilation>true</MultiProcessorCompilation>
-      <LanguageStandard>stdcpp14</LanguageStandard>
-      <PreprocessorDefinitions>_MBCS;WIN32;_WINDOWS;;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>C:\local\boost_1_65_1\</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
     </Link>
+    <Lib>
+      <AdditionalLibraryDirectories>C:\local\boost_1_65_1\lib64-msvc-14.1</AdditionalLibraryDirectories>
+    </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Network\Common\Common.h" />
-    <ClInclude Include="..\..\Network\Socket\AsyncAcceptor.h" />
-    <ClInclude Include="..\..\Network\Socket\Client.h" />
-    <ClInclude Include="..\..\Network\Socket\ClientSocketMgr.h" />
-    <ClInclude Include="..\..\Network\Socket\Opcode\Opcode.h" />
-    <ClInclude Include="..\..\Network\Socket\Session.h" />
-    <ClInclude Include="..\..\Network\Socket\TCPSocket.h" />
-    <ClInclude Include="..\..\Network\Socket\SocketMgr.h" />
-    <ClInclude Include="..\..\Network\Socket\UdpSocketClient.h" />
-    <ClInclude Include="..\..\Network\Socket\UdpSocketServer.h" />
-    <ClInclude Include="..\..\Network\Socket\WorldSocket.h" />
-    <ClInclude Include="..\..\Network\Socket\WorldSocketMgr.h" />
+    <ClInclude Include="..\..\Tools\Log\Log.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Network\Socket\Client.cpp" />
-    <ClCompile Include="..\..\Network\Socket\Session.cpp" />
-    <ClCompile Include="..\..\Network\Socket\UdpSocketClient.cpp" />
-    <ClCompile Include="..\..\Network\Socket\UdpSocketServer.cpp" />
-    <ClCompile Include="..\..\Network\Socket\WorldSocket.cpp" />
-    <ClCompile Include="..\..\Network\Socket\WorldSocketMgr.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Logger\Logger.vcxproj">
-      <Project>{25a5fac2-21a3-43dd-884b-b33de6daee60}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Protobuf\Protobuf.vcxproj">
-      <Project>{3e94d144-aab3-4c35-aefb-36d980257b0c}</Project>
-    </ProjectReference>
-    <ProjectReference Include="..\Proto\Proto.vcxproj">
-      <Project>{e60f0020-ec72-40f5-9d80-911999dafe1e}</Project>
-    </ProjectReference>
+    <ClCompile Include="..\..\Tools\Log\pch.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

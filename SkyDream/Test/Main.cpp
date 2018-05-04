@@ -5,7 +5,7 @@
 #include <proto/test.pb.h>
 #include <Socket/WorldSocket.h>
 #include <Asio/IoContext.h>
-#include "Common//Common.h"
+#include "Common/Common.h"
 #include "Socket/Client.h"
 #include "Socket/WorldSocketMgr.h"
 #include "Socket/AsyncAcceptor.h"
@@ -52,7 +52,7 @@ void ThreadAccepter()
 	delete client;
 
 }
-int main()
+int omain()
 {
 	auto thread = std::thread(ThreadAccepter);
 	thread.detach();

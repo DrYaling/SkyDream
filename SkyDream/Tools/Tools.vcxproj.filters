@@ -13,13 +13,21 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="源文件\Generators">
+      <UniqueIdentifier>{acc3e376-4587-4fd2-befa-67ff7a831881}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Generators\Terrian">
+      <UniqueIdentifier>{58370d19-4d7f-41a3-904c-cda1c551687d}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="koch.cpp">
-      <Filter>源文件</Filter>
+    <ClInclude Include="..\..\Tools\TerrianGenerator\Terrian.h">
+      <Filter>源文件\Generators\Terrian</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Tools\TerrianGenerator\Terrian.cpp">
+      <Filter>源文件\Generators\Terrian</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

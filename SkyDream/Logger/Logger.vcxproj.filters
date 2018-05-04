@@ -13,13 +13,18 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="源文件\Log">
+      <UniqueIdentifier>{033b4e71-b289-48e1-9915-b84e8a1ff8ff}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="Main.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="koch.cpp">
-      <Filter>源文件</Filter>
+    <ClInclude Include="..\..\Tools\Log\Log.h">
+      <Filter>源文件\Log</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\Tools\Log\pch.cpp">
+      <Filter>源文件\Log</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

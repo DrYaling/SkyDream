@@ -135,11 +135,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="koch.cpp" />
     <ClCompile Include="Main.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Logger\Logger.vcxproj">
+      <Project>{25a5fac2-21a3-43dd-884b-b33de6daee60}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Network\Network.vcxproj">
       <Project>{1c403377-100f-4d7a-a5a1-b0503fb6b8b3}</Project>
+    </ProjectReference>
+    <ProjectReference Include="..\Tools\Tools.vcxproj">
+      <Project>{b798499a-56db-47b6-9d1b-dab168c85531}</Project>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
