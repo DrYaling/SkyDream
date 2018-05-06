@@ -19,14 +19,35 @@
     <Filter Include="源文件\Generators\Terrian">
       <UniqueIdentifier>{58370d19-4d7f-41a3-904c-cda1c551687d}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\Generators\Plants">
+      <UniqueIdentifier>{7cdf19ca-32e0-40d1-aaa4-3aa42b2e7928}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\Tools\TerrianGenerator\Terrian.h">
+    <ClInclude Include="..\..\Tools\Generators\generator.h">
+      <Filter>源文件\Generators</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tools\Generators\TerrianGenerator\Terrian.h">
+      <Filter>源文件\Generators\Terrian</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tools\Generators\Plants\Plants.h">
+      <Filter>源文件\Generators\Plants</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Entities\universeDef.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tools\Noises\PerlinNoise.h">
+      <Filter>源文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tools\Generators\TerrianGenerator\Mountain.h">
       <Filter>源文件\Generators\Terrian</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\Tools\TerrianGenerator\Terrian.cpp">
+    <ClCompile Include="..\..\Tools\Generators\TerrianGenerator\Terrian.cpp">
+      <Filter>源文件\Generators\Terrian</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tools\Generators\TerrianGenerator\Mountain.cpp">
       <Filter>源文件\Generators\Terrian</Filter>
     </ClCompile>
   </ItemGroup>

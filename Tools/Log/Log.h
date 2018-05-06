@@ -12,7 +12,8 @@
 #if WIN32
 #include <windows.h>
 #endif
-#define LOG_TO_FILE
+#define LOG_SWITCH 1
+//#define LOG_TO_FILE
 #ifdef LOG_TO_FILE
 #define logToFile 1
 #define splitLogFileByType 1
@@ -37,12 +38,21 @@ enum LoggerType
 	LOGGER_WARN = 1,
 	LOGGER_ERROR = 2
 };
+#if LOG_SWITCH
 #define LogFormat(logType,format, ...) GlobalLogger::LogContent(LoggerType::LOGGER_LOG, logType, format, __VA_ARGS__)
 #define Log(logType,format) GlobalLogger::LogContent(LoggerType::LOGGER_LOG, logType, format)
 #define LogWarningFormat(logType,format, ...) GlobalLogger::LogContent(LoggerType::LOGGER_WARN, logType, format, __VA_ARGS__)
 #define LogWarning(logType,format) GlobalLogger::LogContent(LoggerType::LOGGER_WARN, logType, format)
 #define LogErrorFormat(logType,format, ...) GlobalLogger::LogContent(LoggerType::LOGGER_ERROR, logType, format, __VA_ARGS__)
 #define LogError(logType,format) GlobalLogger::LogContent(LoggerType::LOGGER_ERROR, logType, format)
+#else
+#define LogFormat(logType,format, ...) 
+#define Log(logType,format)
+#define LogWarningFormat(logType,format, ...) 
+#define LogWarning(logType,format) 
+#define LogErrorFormat(logType,format, ...)
+#define LogError(logType,format) 
+#endif
 class GlobalLogger
 {
 public:
