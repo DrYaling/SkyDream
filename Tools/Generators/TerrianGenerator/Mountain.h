@@ -68,10 +68,11 @@ public:
 	void Start();
 private:
 	bool Gen();
-	//概率生成下一个，如果没生成成功，返回false，类似于执行了一个[]
-	size_t GenNextByChange(char prev, size_t& rpos);
 	//生成下一个Block
 	size_t GenNextBlock(char prev, size_t& rpos);
+	//生成下一个var
+	void GenNext(char v,size_t& rpos);
+	void GenVar(char v,size_t rpos);
 	//生成岩石
 	void GenRock();
 	inline bool CheckRP(size_t rpos)
@@ -90,8 +91,7 @@ private:
 	{
 		if (CheckRP(rpos))
 		{
-			rpos++;
-			return _tmpList[rpos];
+			return _tmpList[rpos++];
 		}
 		return 0;
 	}
@@ -101,7 +101,8 @@ private:
 	std::map<char, const char*> _rules;
 	int _genDepth;
 	float _currentDir;
-	MemoryPoint _M;
+	Vector3 _currentPoint;
+	std::stack<MemoryPoint> _M;
 };
 
 NS_GNRT_END

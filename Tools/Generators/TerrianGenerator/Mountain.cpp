@@ -5,16 +5,16 @@ NS_GNRT_START
 #define isconstants(c) (c == '+' || c == '-' || c == '>' || c == '<' ||c == '[' || c == ']' || c == '^')
 #define isDir(c) (c == '+' || c == '-' || c == '>' || c == '<')
 #define Degree2Angle 3.1415926/180.0
-float GetDirection(char d, float curDir)
+inline float GetDirection(char d, float curDir)
 {
 	if (d == '<')
-		return curDir - std::sin(30 * Degree2Angle);
+		return curDir - /*std::sin*/(30 /** Degree2Angle*/);
 	else if (d == '>')
-		return curDir + std::sin(30 * Degree2Angle);
+		return curDir + /*std::sin*/(30 /** Degree2Angle*/);
 	else if (d == '+')
-		return curDir + std::sin(15 * Degree2Angle);
+		return curDir + /*std::sin*/(15 /** Degree2Angle*/);
 	else if (d == '-')
-		return curDir - std::sin(15 * Degree2Angle);
+		return curDir - /*std::sin*/(15 /** Degree2Angle*/);
 	else return curDir;
 }
 float GetChangeF(char from, char to)
@@ -63,10 +63,11 @@ Vector3 GetNextPoint(char c)
 MountainGen::MountainGen(Vector3&& p, int depth) :
 	_mother(),
 	_child(),
-	_M(std::move(p), 0, 0, 0),
+	_M(),
 	_rules(),
 	_genDepth(depth),
 	_currentDir(0),
+	_currentPoint(p),
 	_tmpList()
 {
 	/*L_M_Point first('S', 0, std::move(p));
@@ -82,58 +83,6 @@ MountainGen::~MountainGen()
 	_mother.clear();
 	_child.clear();
 	_rules.clear();
-}
-
-void MountainGen::Init(int seed)
-{
-	_msrandom(seed);
-}
-
-void MountainGen::Start()
-{
-	Init(time(nullptr));
-	Gen();
-	return;
-	//relocate
-	size_t rpos = 0;
-	std::vector<char> _gen;
-	char tmp = 0;
-	while (CheckRP(rpos))
-	{
-		char c = _tmpList[rpos];
-		//chance event
-		switch (c)
-		{
-		case '^':
-		{
-			GenNextByChange(c, rpos);
-			break;
-		}
-		case '[':
-		{
-			GenNextBlock(c, rpos);
-			break;
-		}
-		case '>':
-		{
-			break;
-		}
-		case '<':
-		{
-			break;
-		}
-		case '+':
-		{
-			break;
-		}
-		case '-':
-		{
-			break;
-		}
-		default:
-			break;
-		}
-	}
 }
 
 //ignore block recusively
@@ -158,7 +107,7 @@ static bool IIgnoreBlockReverse(std::string::iterator& end, const std::string::i
 static char GetMstate(std::string::iterator& end, const std::string::iterator& begin)
 {
 	auto i = end;
-	while(true)
+	while (true)
 	{
 		if (i != begin)
 		{
@@ -418,64 +367,119 @@ bool MountainGen::Gen()
 		_tmpList.push_back(gen[i]);
 	}
 	//FlushGen(_tmpList);
-	LogFormat("GenMountain L-", "depth %d:\n\t%s", _genDepth, gen.c_str());
+	LogFormat("MountainGen", "depth %d:\n\t%s", _genDepth, gen.c_str());
 	_genDepth--;
 	if (_genDepth <= 0)
 		return true;
 	return Gen();
 }
-
-size_t MountainGen::GenNextByChange(char prev, size_t& rpos)
+void MountainGen::Init(int seed)
 {
+	_msrandom(seed);
+}
 
-	bool excecute = false;
-	bool cIsBlock = false;
+void MountainGen::Start()
+{
+	Init(time(nullptr));
+	Gen();
+	//normal L-system translation
+	//relocate
+	size_t rpos = 0;
+	std::vector<char> _gen;
 	char tmp = 0;
-	rpos++;
+	while (CheckRP(rpos))
+	{
+		char c = Next(rpos);
+		switch (c)
+		{
+		case '^':
+		{
+			throw 0;
+			return;
+		}
+		case '[':
+		{
+			MemoryPoint m = MemoryPoint(std::move(_currentPoint), c, _currentDir, rpos);
+			GenNextBlock(c, rpos);
+			_currentDir = m.i;
+			_currentPoint = m.v;
+			break;
+		}
+		default:
+			GenNext(c, rpos);
+			break;
+		}
+	}
+	for (auto m : _mother)
+	{
+		LogFormat("MountainGen_Ret", "idx %d,\t\tvector3(%d,\t\t%d,\t\t%d),\t\t\t\tvar %c", m.idx, m.v.x, m.v.y, m.v.z, m.z);
+	}
+}
+//gen block map
+//ensure that rpos is [
+size_t MountainGen::GenNextBlock(char prev, size_t& rpos)
+{
 	while (true)
 	{
-		tmp = NextNoStep(rpos);
-		if (tmp != 0)
+		char c = Next(rpos);
+		if (c == ']')
+			return 0;
+		else if (c == '[')
 		{
-			//
-			if (isvariables(tmp))
-			{
-				//go on
-				if (GetChange(prev, tmp))
-				{
-					excecute = true;
-					//do []
-					if (cIsBlock)
-					{
-
-					}
-					//do single char
-					else
-					{
-
-					}
-				}
-				else if (!cIsBlock)
-				{
-					rpos++;
-					break;
-				}
-			}
-			if (tmp == '[')
-			{
-				cIsBlock = true;
-			}
+			MemoryPoint m = MemoryPoint(std::move(_currentPoint), c, _currentDir, rpos);
+			GenNextBlock(c, rpos);
+		}
+		else
+		{
+			GenNext(c, rpos);
 		}
 	}
 	return 0;
 }
-
-size_t MountainGen::GenNextBlock(char prev, size_t& rpos)
+void MountainGen::GenNext(char v, size_t& rpos)
 {
-
-	return 0;
+	char first = v;
+	if (isvariables(first))
+	{
+		GenVar(first, rpos);
+	}
+	else if (isDir(first))
+	{
+		char second = Next(rpos);
+		_currentDir = GetDirection(first, _currentDir);
+		if (isvariables(second))
+		{
+			GenVar(second, rpos);
+		}
+		else
+		{
+			LogErrorFormat("MountainGen", "GenNextFail at pos %d", rpos);
+		}
+	}
+	else
+	{
+		LogErrorFormat("MountainGen", "GenNextFail at pos %d", rpos);
+	}
 }
+void MountainGen::GenVar(char v, size_t rpos)
+{
+	float x = _currentPoint.x + NORMAL_STEP * std::cos(_currentDir);
+	float y = _currentPoint.y + NORMAL_STEP * std::sin(_currentDir);
+	float height = 0;
+	if (v == 'C')
+		height -= _mrandom(10, 5000);
+	else if (v == 'T')
+		height += _mrandom(40, 100);
+	else if (v == 'S')
+		height += _mrandom(-300, 300);
+	float z = _currentPoint.z + height;
+	_currentPoint.x = x;
+	_currentPoint.y = y;
+	_currentPoint.z = z;
 
+	L_M_Point p = L_M_Point(v, rpos-1, std::move(_currentPoint));
+	_mother.push_back(p);
+}
 void MountainGen::GenRock()
 {
 }

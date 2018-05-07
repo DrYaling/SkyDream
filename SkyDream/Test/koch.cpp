@@ -7,6 +7,7 @@
 #include "../../Tools/Log/Log.h"
 #include "../../Tools/Generators/TerrianGenerator/Mountain.h"
 #include <time.h>
+
 using namespace generator;
 using namespace std;
 typedef long long lol;
@@ -14,12 +15,16 @@ lol Mod = 1000000007;
 lol pw[5010], a[5010][5010], d, n, ans;
 int main()
 {
-	time_t t;
-	auto t0 = time(nullptr);
-	MountainGen gen = MountainGen(Vector3(),3);
+	DWORD start, stop;
+	start = GetTickCount();
+	auto p = Vector3();
+	p.x = 2370;
+	p.y = 5428;
+	p.z = 4562;
+	MountainGen gen = MountainGen(std::move(p),3);
 	gen.Start();
-	auto t1 = time(nullptr);
-	LogFormat("MountainGen", "gen time %d",t1-t0);
+	stop = GetTickCount();
+	LogFormat("MountainGen", "gen time %d", stop-start);
 	int i, j, flag, k;
 	//LogFormat("KOCH", "%s,%d", "aaa", 32768);
 	GlobalLogger::Clear();
