@@ -5,15 +5,23 @@
 #include<stdlib.h>
 #include <windows.h>
 #include "../../Tools/Log/Log.h"
+#include "../../Tools/Generators/TerrianGenerator/Mountain.h"
+#include <time.h>
+using namespace generator;
 using namespace std;
 typedef long long lol;
 lol Mod = 1000000007;
 lol pw[5010], a[5010][5010], d, n, ans;
 int main()
 {
+	time_t t;
+	auto t0 = time(nullptr);
+	MountainGen gen = MountainGen(Vector3(),3);
+	gen.Start();
+	auto t1 = time(nullptr);
+	LogFormat("MountainGen", "gen time %d",t1-t0);
 	int i, j, flag, k;
-	LogFormat("KOCH", "%s,%d", "aaa", 32768);
-	LogFormat("KOCH1", "%s,%d", "aaa", 897);
+	//LogFormat("KOCH", "%s,%d", "aaa", 32768);
 	GlobalLogger::Clear();
 	cin >> n;
 	pw[0] = 1;

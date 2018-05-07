@@ -13,7 +13,7 @@
 #include <windows.h>
 #endif
 #define LOG_SWITCH 1
-//#define LOG_TO_FILE
+#define LOG_TO_FILE
 #ifdef LOG_TO_FILE
 #define logToFile 1
 #define splitLogFileByType 1
@@ -31,7 +31,7 @@
 static std::map<const char*,std::ofstream*> _logFiles = std::map<const char*, std::ofstream*>();
 static std::mutex _logLock;
 static std::string buff;
-static char cbuffer[2048] = { 0 };
+static char cbuffer[80*2048] = { 0 };
 enum LoggerType
 {
 	LOGGER_LOG = 0,
@@ -209,6 +209,7 @@ private:
 				return false;
 			}
 		}
+		return true;
 #endif
 	}
 #endif

@@ -3,6 +3,7 @@
 #include "../../Generators/generator.h"
 
 	NS_GNRT_START
+
 /*
 variables:S T R C
 constants:[]+-<>^   +为顺时针15°，-为逆时针15°，<为逆时针30°，>为顺时针30°，^为概率事件
@@ -10,6 +11,8 @@ axiom: S
 rules:(T->^[<C+SRTSR-S>T]^S^[RT]^>S<C[+T^C]^[-R]),
 （C->^S^T^C^R）
 （S->[S^T>SR<S-TR+S]^[+STRS>S<T-S][-SST<SR>T+RS]^[>RSTS-SR+T>S]^[<STRS+S-T<SR])
+
+不支持 ^[^S]这样的结构，因为^[S]和[^S]都是根据S来判断
 
 */
 #define NORMAL_STEP 5*1000 //meter
@@ -59,25 +62,48 @@ static MemoryPoint mp_zero = MemoryPoint(Vector3(), 0, 0, 0);
 class MountainGen
 {
 public:
-	explicit MountainGen(Vector3 p, int depth);
+	explicit MountainGen(Vector3&& p, int depth);
 	~MountainGen();
 	void Init(int seed);
-	void Gen();
+	void Start();
 private:
+	bool Gen();
 	//概率生成下一个，如果没生成成功，返回false，类似于执行了一个[]
-	bool GenNextByChange(char prev, char& next);
-	//概率生成下一个Block
-	bool GenNextBlockByChane(char prev, const char* block);
+	size_t GenNextByChange(char prev, size_t& rpos);
 	//生成下一个Block
-	bool GenNextBlock(char prev, const char* block);
+	size_t GenNextBlock(char prev, size_t& rpos);
 	//生成岩石
 	void GenRock();
+	inline bool CheckRP(size_t rpos)
+	{
+		return rpos < _tmpList.size();
+	}
+	inline char NextNoStep(size_t rpos)
+	{
+		if (CheckRP(rpos))
+		{
+			return _tmpList[rpos];
+		}
+		return 0;
+	}
+	inline char Next(size_t& rpos)
+	{
+		if (CheckRP(rpos))
+		{
+			rpos++;
+			return _tmpList[rpos];
+		}
+		return 0;
+	}
 	std::vector<L_M_Point> _mother;
 	std::vector<L_M_Point> _child;
+	std::vector<char> _tmpList;
 	std::map<char, const char*> _rules;
 	int _genDepth;
+	float _currentDir;
 	MemoryPoint _M;
 };
+
 NS_GNRT_END
 
 #endif
