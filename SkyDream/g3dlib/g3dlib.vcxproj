@@ -67,6 +67,9 @@
     <ClCompile Include="..\..\Dep\g3dlite\source\Vector3.cpp" />
     <ClCompile Include="..\..\Dep\g3dlite\source\Vector4.cpp" />
   </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\Dep\g3dlite\include\G3D\platform.h" />
+  </ItemGroup>
   <PropertyGroup Label="Globals">
     <VCProjectVersion>15.0</VCProjectVersion>
     <ProjectGuid>{3CF7E494-A626-41FD-A0EC-08C56D7CE88C}</ProjectGuid>
@@ -125,7 +128,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../Dep/g3dlite/include;../../Dep/zlib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Dep/g3dlite/include/;../../Dep/zlib</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsCpp</CompileAs>
@@ -139,7 +142,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../Dep/g3dlite/include;../../Dep/zlib</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Dep/g3dlite/include/;../../Dep/zlib</AdditionalIncludeDirectories>
       <MultiProcessorCompilation>true</MultiProcessorCompilation>
       <PreprocessorDefinitions>WIN32;_WINDOWS;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <CompileAs>CompileAsCpp</CompileAs>

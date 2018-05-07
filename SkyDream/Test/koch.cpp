@@ -20,8 +20,8 @@ int main()
 	auto p = Vector3();
 	p.x = 2370;
 	p.y = 5428;
-	p.z = 4562;
-	MountainGen gen = MountainGen(std::move(p),3);
+	p.z = 7562;
+	MountainGen gen = MountainGen(std::move(p),2);
 	gen.Start();
 	stop = GetTickCount();
 	LogFormat("MountainGen", "gen time %d", stop-start);

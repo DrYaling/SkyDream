@@ -38,6 +38,8 @@ float GetChangeF(char from, char to)
 			return .10;
 		else if (to == 'C')
 			return .02;
+		else
+			return 0;
 	}
 	else if (from == 'C')
 	{
@@ -50,15 +52,15 @@ float GetChangeF(char from, char to)
 		else
 			return 0;
 	}
+	else
+	{
+		return 0;
+	}
 }
 bool GetChange(char from, char to)
 {
 	float chance = _mrandom(0, 10000) / 10000.0;
 	return chance <= GetChangeF(from, to);
-}
-Vector3 GetNextPoint(char c)
-{
-	return Vector3();
 }
 MountainGen::MountainGen(Vector3&& p, int depth) :
 	_mother(),
@@ -412,7 +414,7 @@ void MountainGen::Start()
 	}
 	for (auto m : _mother)
 	{
-		LogFormat("MountainGen_Ret", "idx %d,\t\tvector3(%d,\t\t%d,\t\t%d),\t\t\t\tvar %c", m.idx, m.v.x, m.v.y, m.v.z, m.z);
+		LogFormat("MountainGen_Ret", "idx %d,\t\tvector3(%.2f,\t\t%.2f,\t\t%.2f),\t\t\t\tvar %c", m.idx, m.v.x, m.v.y, m.v.z, m.z);
 	}
 }
 //gen block map
@@ -467,17 +469,17 @@ void MountainGen::GenVar(char v, size_t rpos)
 	float y = _currentPoint.y + NORMAL_STEP * std::sin(_currentDir);
 	float height = 0;
 	if (v == 'C')
-		height -= _mrandom(10, 5000);
+		height -= _mrandom(10, 8000);
 	else if (v == 'T')
-		height += _mrandom(40, 100);
+		height += _mrandom(40, 1800);
 	else if (v == 'S')
-		height += _mrandom(-300, 300);
+		height += _mrandom(-1200, 1200);
 	float z = _currentPoint.z + height;
 	_currentPoint.x = x;
 	_currentPoint.y = y;
 	_currentPoint.z = z;
-
-	L_M_Point p = L_M_Point(v, rpos-1, std::move(_currentPoint));
+	Vector3 p3(x, y, z);
+	L_M_Point p = L_M_Point(v, rpos-1, std::move(p3));
 	_mother.push_back(p);
 }
 void MountainGen::GenRock()

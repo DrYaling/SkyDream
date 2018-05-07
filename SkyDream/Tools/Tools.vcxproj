@@ -72,13 +72,14 @@
   <PropertyGroup />
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level1</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>C:\local\boost_1_65_1\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\local\boost_1_65_1\;../../Dep/g3dlite/include/;../../Dep/zlib</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
@@ -90,13 +91,14 @@
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <WarningLevel>Level3</WarningLevel>
+      <WarningLevel>Level1</WarningLevel>
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
       <PreprocessorDefinitions>_MBCS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <DisableSpecificWarnings>4996</DisableSpecificWarnings>
-      <AdditionalIncludeDirectories>C:\local\boost_1_65_1\</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\local\boost_1_65_1\;../../Dep/g3dlite/include/;../../Dep/zlib</AdditionalIncludeDirectories>
+      <MultiProcessorCompilation>true</MultiProcessorCompilation>
     </ClCompile>
     <Lib>
       <AdditionalDependencies>%(AdditionalDependencies)</AdditionalDependencies>
@@ -163,6 +165,9 @@
     <ClInclude Include="..\..\Tools\Noises\PerlinNoise.h" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\g3dlib\g3dlib.vcxproj">
+      <Project>{3cf7e494-a626-41fd-a0ec-08c56d7ce88c}</Project>
+    </ProjectReference>
     <ProjectReference Include="..\Logger\Logger.vcxproj">
       <Project>{25a5fac2-21a3-43dd-884b-b33de6daee60}</Project>
     </ProjectReference>

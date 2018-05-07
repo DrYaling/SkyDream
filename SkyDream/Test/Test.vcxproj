@@ -76,7 +76,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../Dep;C:\local\boost_1_65_1;../../Dep/google;../../Network/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Dep;C:\local\boost_1_65_1;../../Dep/google;../../Network/;../../Dep/g3dlite/include/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>
@@ -90,7 +90,7 @@
       <Optimization>Disabled</Optimization>
       <SDLCheck>true</SDLCheck>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>../../Dep;C:\local\boost_1_65_1;../../Dep/google;../../Network/</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>../../Dep;C:\local\boost_1_65_1;../../Dep/google;../../Network/;../../Dep/g3dlite/include/</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_MBCS;WIN32;_WINDOWS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
     </ClCompile>
     <Link>

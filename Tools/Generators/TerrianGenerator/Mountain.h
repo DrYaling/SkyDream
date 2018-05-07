@@ -1,8 +1,9 @@
 #ifndef _MOUNTAIN_H
 #define _MOUNTAIN_H
 #include "../../Generators/generator.h"
+using namespace G3D;
 
-	NS_GNRT_START
+NS_GNRT_START
 
 /*
 variables:S T R C
@@ -15,7 +16,7 @@ rules:(T->^[<C+SRTSR-S>T]^S^[RT]^>S<C[+T^C]^[-R]),
 不支持 ^[^S]这样的结构，因为^[S]和[^S]都是根据S来判断
 
 */
-#define NORMAL_STEP 5*1000 //meter
+#define NORMAL_STEP 10*1000 //meter
 static inline int _mrandom(int min, int max)
 {
 	if (min >= max)

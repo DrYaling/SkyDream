@@ -9,9 +9,6 @@
 #include <mutex>
 #include <map>
 #include <boost/filesystem.hpp>
-#if WIN32
-#include <windows.h>
-#endif
 #define LOG_SWITCH 1
 #define LOG_TO_FILE
 #ifdef LOG_TO_FILE

@@ -6,6 +6,8 @@ created by zxb @2018-5-4
 #ifndef _TERRIAN_H
 #define _TERRIAN_H
 #include "../generator.h"
+using namespace G3D;
+
 NS_GNRT_START
 
 struct TerrianPoint
