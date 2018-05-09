@@ -162,6 +162,12 @@
     <ClInclude Include="..\..\Tools\Generators\Plants\Plants.h" />
     <ClInclude Include="..\..\Tools\Generators\TerrianGenerator\Mountain.h" />
     <ClInclude Include="..\..\Tools\Generators\TerrianGenerator\Terrian.h" />
+    <ClInclude Include="..\..\Tools\Mesh\Delaunay.h" />
+    <ClInclude Include="..\..\Tools\Mesh\Edge.h" />
+    <ClInclude Include="..\..\Tools\Mesh\Mesh.h" />
+    <ClInclude Include="..\..\Tools\Mesh\Triangle2D.h" />
+    <ClInclude Include="..\..\Tools\Mesh\UnityMesh.h" />
+    <ClInclude Include="..\..\Tools\Mesh\Vector2Lite.h" />
     <ClInclude Include="..\..\Tools\Noises\PerlinNoise.h" />
   </ItemGroup>
   <ItemGroup>
@@ -175,6 +181,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\Tools\Generators\TerrianGenerator\Mountain.cpp" />
     <ClCompile Include="..\..\Tools\Generators\TerrianGenerator\Terrian.cpp" />
+    <ClCompile Include="..\..\Tools\Mesh\UnityMesh.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

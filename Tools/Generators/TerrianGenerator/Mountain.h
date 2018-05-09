@@ -17,6 +17,7 @@ rules:(T->^[<C+SRTSR-S>T]^S^[RT]^>S<C[+T^C]^[-R]),
 
 */
 #define NORMAL_STEP 10*1000 //meter
+
 static inline int _mrandom(int min, int max)
 {
 	if (min >= max)

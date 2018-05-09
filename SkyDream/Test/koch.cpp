@@ -16,12 +16,13 @@ lol pw[5010], a[5010][5010], d, n, ans;
 int main()
 {
 	DWORD start, stop;
+	GlobalLogger::Init();
 	start = GetTickCount();
 	auto p = Vector3();
 	p.x = 2370;
 	p.y = 5428;
 	p.z = 7562;
-	MountainGen gen = MountainGen(std::move(p),2);
+	MountainGen gen = MountainGen(std::move(p),3);
 	gen.Start();
 	stop = GetTickCount();
 	LogFormat("MountainGen", "gen time %d", stop-start);

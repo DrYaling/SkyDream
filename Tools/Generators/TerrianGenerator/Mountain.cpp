@@ -1,5 +1,6 @@
 #include "Mountain.h"
 #include <time.h>
+#include "../../Mesh/UnityMesh.h"
 NS_GNRT_START
 #define isvariables(c) (c == 'S' || c == 'T' || c == 'C' || c == 'R')
 #define isconstants(c) (c == '+' || c == '-' || c == '>' || c == '<' ||c == '[' || c == ']' || c == '^')
@@ -379,22 +380,16 @@ void MountainGen::Init(int seed)
 {
 	_msrandom(seed);
 }
+#define COMPARE_RANGE NORMAL_STEP/10
 inline bool sort_vector3(const L_M_Point& obj1, const L_M_Point& obj2)
 {
-	if (obj1.v == obj2.v)
-		return false;
-	else if (&obj1 == &obj2)
-		return false;
-	LogFormat("cmpare ", "%f,%f,%f   to   %f,%f,%f",obj1.v.x,obj1.v.y,obj1.v.z,obj2.v.x,obj2.v.y,obj2.v.z);
-	if (obj1.v.x < obj2.v.x)
+		//LogFormat("compare ", "%d:(%.2f,%.2f) to %d:(%.2f,%.2f)", obj1.idx, obj1.v.x, obj1.v.z, obj2.idx, obj2.v.x, obj2.v.z);
+	if (obj1.v.z < obj2.v.z- COMPARE_RANGE)
 		return true;
-	else if (obj1.v.y < obj2.v.y)
-		return true;
-	else if (obj1.v.z < obj2.v.z)
-		return true;
+	else if (std::abs(obj1.v.z - obj2.v.z)<COMPARE_RANGE)
+		return obj1.v.x < obj2.v.x;
 	else
 		return false;
-	return obj1.v.x < obj2.v.x || obj1.v.y < obj2.v.y || obj1.v.z < obj2.v.z;
 }
 void MountainGen::Start()
 {
@@ -429,10 +424,20 @@ void MountainGen::Start()
 		}
 	}
 	std::sort(_mother.begin(), _mother.end(), sort_vector3);
+	std::vector<Vector3> v3;	
 	for (auto m : _mother)
 	{
+		v3.push_back(m.v);
 		LogFormat("MountainGen_Ret", "idx %d,\t\tvector3(%.2f,\t\t%.2f,\t\t%.2f),\t\t\t\tvar %c", m.idx, m.v.x, m.v.y, m.v.z, m.z);
+		LogFormat("Ret_V3", "%.2f,\t\t%.2f,\t\t%.2f",m.v.x, m.v.y, m.v.z);
 	}
+	std::vector<int32_t> triangles;
+	unityMesh::trianglate(v3, triangles);
+	for (auto i : triangles)
+	{
+		LogFormat("Ret_t", "%d", i);
+	}
+
 }
 //gen block map
 //ensure that rpos is [

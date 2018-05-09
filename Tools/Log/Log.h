@@ -8,7 +8,10 @@
 #include <string.h>
 #include <mutex>
 #include <map>
+#include <thread>
 #include <boost/filesystem.hpp>
+#define LOG_IN_THREAD 0
+//#define LOG_TYPE_AS_TITLE
 #define LOG_SWITCH 1
 #define LOG_TO_FILE
 #ifdef LOG_TO_FILE
@@ -25,10 +28,17 @@
 #define globalLogFilePath "../Logs/log.txt"
 #endif
 #endif
-static std::map<const char*,std::ofstream*> _logFiles = std::map<const char*, std::ofstream*>();
+#ifdef WIN32
+#include "windows.h"
+#define sleep(x) Sleep(x)
+#endif
+static std::map<const char*, std::ofstream*> _logFiles = std::map<const char*, std::ofstream*>();
 static std::mutex _logLock;
 static std::string buff;
-static char cbuffer[80*2048] = { 0 };
+static std::map<std::string*, const char*> logContents;
+static std::map<std::string*, const char*> logContentsSwap;
+static char cbuffer[80 * 2048] = { 0 };
+static bool logInitilized = false;
 enum LoggerType
 {
 	LOGGER_LOG = 0,
@@ -53,40 +63,16 @@ enum LoggerType
 class GlobalLogger
 {
 public:
-	/*static void LogFormat(const char* logType, const char* format, ...)
+	static void Init()
 	{
-		va_list valist;
-		va_start(valist, format);
-		LogContent(LoggerType::LOGGER_LOG, logType, format, valist);
-		va_end(valist);
+		if (logInitilized)
+			return;
+#if LOG_IN_THREAD
+		static std::thread logThread(&GlobalLogger::LogThreaded);
+		logThread.detach();
+#endif
+		logInitilized = true;
 	}
-	static void Log(const char* logType, const char* content)
-	{
-		LogContent(LoggerType::LOGGER_LOG, logType, content);
-	}
-	static void LogWarningFormat(const char* logType, const char* format, ...)
-	{
-		va_list valist;
-		va_start(valist, format);
-		LogContent(LoggerType::LOGGER_WARN, logType, format, valist, 0);
-		va_end(valist);
-	}
-	static void LogWarning(const char* logType, const char* content)
-	{
-		LogContent(LoggerType::LOGGER_WARN, logType, content);
-	}
-	static void LogErrorFormat(const char* logType, const char* format, ...)
-	{
-		va_list valist;
-		va_start(valist, format);
-		LogContent(LoggerType::LOGGER_ERROR, logType, format, valist, 0);
-		va_end(valist);
-	}
-	static void LogError(const char* logType, const char* content)
-	{
-		LogContent(LoggerType::LOGGER_ERROR, logType, content);
-	}	
-	*/
 	static void Clear(const char* logType = nullptr)
 	{
 		if (nullptr != logType)
@@ -94,7 +80,7 @@ public:
 			auto itr = _logFiles.find(logType);
 			if (itr != _logFiles.end())
 			{
-				std::ofstream*f  = itr->second;
+				std::ofstream*f = itr->second;
 				f->close();
 				delete f;
 				_logFiles.erase(itr);
@@ -113,12 +99,12 @@ public:
 	}
 	static void LogContent(LoggerType eType, const char* logType, const char* format, ...)
 	{
-		_logLock.lock();
 		buff.clear();
 #if !splitLogFileByType
 		buff.append(logType);
 		buff.append("--");
 #endif
+#ifdef LOG_TYPE_AS_TITLE
 		switch (eType)
 		{
 		case LoggerType::LOGGER_LOG:
@@ -133,6 +119,7 @@ public:
 		default:
 			return;
 		}
+#endif
 		memset(cbuffer, 0, sizeof(cbuffer));
 		va_list valist;
 		va_start(valist, format);
@@ -140,17 +127,22 @@ public:
 		buff.append(cbuffer);
 		buff.append("\n");
 		va_end(valist);
+		_logLock.lock();
+#if !LOG_IN_THREAD
 #if !splitLogFileByType
-		printf(buff.c_str());
+		printf(buff->c_str());
 #else
 		printf("%s--%s", logType, buff.c_str());
 #endif
 #if logToFile
 		LogToFile(logType, buff.c_str());
 #endif
-		buff.clear();
+#else
+		logContents.insert(std::pair<std::string*, const char*>(new std::string(buff), logType));
+#endif
 		_logLock.unlock();
 	}
+
 private:
 	GlobalLogger() {}
 #if logToFile
@@ -196,8 +188,8 @@ private:
 				boost::filesystem::create_directory(dir);
 			//if (!boost::filesystem::exists(filePath))
 			//	boost::filesystem::create_directory(filePath);
-			std::ofstream* f = new std::ofstream(filePath, std::ios_base::in| std::ios_base::app);
-			if (f!= nullptr)
+			std::ofstream* f = new std::ofstream(filePath, std::ios_base::in | std::ios_base::app);
+			if (f != nullptr)
 			{
 				_logFiles.insert(std::pair<const char*, std::ofstream*>(logType, f));
 			}
@@ -209,6 +201,38 @@ private:
 		return true;
 #endif
 	}
+#if LOG_IN_THREAD
+	static void LogThreaded()
+	{
+		while (true)
+		{
+			sleep(10);
+			_logLock.lock();
+			if (logContents.size() > 0)
+			{
+				for (auto itr= logContents.rbegin();itr!= logContents.rend();itr++)
+				{
+					logContentsSwap.insert(*itr);
+				}
+				logContents.clear();
+			}
+			_logLock.unlock();
+			for (auto itr : logContentsSwap)
+			{
+#if !splitLogFileByType
+				printf(itr->c_str());
+#else
+				printf("%s--%s", itr.second, itr.first->c_str());
+#endif
+#if logToFile
+				LogToFile(itr.second, itr.first->c_str());
+#endif
+				delete itr.first;
+			}
+			logContentsSwap.clear();
+		}
+	}
+#endif
 #endif
 };
 #endif

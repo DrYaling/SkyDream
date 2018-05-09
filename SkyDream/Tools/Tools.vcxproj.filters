@@ -22,6 +22,12 @@
     <Filter Include="源文件\Generators\Plants">
       <UniqueIdentifier>{7cdf19ca-32e0-40d1-aaa4-3aa42b2e7928}</UniqueIdentifier>
     </Filter>
+    <Filter Include="源文件\Mesh">
+      <UniqueIdentifier>{4f5182c3-5ea4-45af-a1c9-282c30022d7b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="源文件\Mesh\UnityMesh">
+      <UniqueIdentifier>{0210f133-29f7-4a5a-99a0-73a0ec8a5643}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\Tools\Generators\generator.h">
@@ -42,6 +48,24 @@
     <ClInclude Include="..\..\Tools\Generators\TerrianGenerator\Mountain.h">
       <Filter>源文件\Generators\Terrian</Filter>
     </ClInclude>
+    <ClInclude Include="..\..\Tools\Mesh\UnityMesh.h">
+      <Filter>源文件\Mesh\UnityMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tools\Mesh\Triangle2D.h">
+      <Filter>源文件\Mesh\UnityMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tools\Mesh\Delaunay.h">
+      <Filter>源文件\Mesh\UnityMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tools\Mesh\Edge.h">
+      <Filter>源文件\Mesh\UnityMesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tools\Mesh\Mesh.h">
+      <Filter>源文件\Mesh</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\Tools\Mesh\Vector2Lite.h">
+      <Filter>源文件\Mesh\UnityMesh</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\Tools\Generators\TerrianGenerator\Terrian.cpp">
@@ -49,6 +73,9 @@
     </ClCompile>
     <ClCompile Include="..\..\Tools\Generators\TerrianGenerator\Mountain.cpp">
       <Filter>源文件\Generators\Terrian</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\Tools\Mesh\UnityMesh.cpp">
+      <Filter>源文件\Mesh\UnityMesh</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>

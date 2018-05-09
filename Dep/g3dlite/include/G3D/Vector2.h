@@ -511,4 +511,10 @@ inline G3D::Vector2 operator*(int s, const G3D::Vector2& v) {
     return v * (float)s;
 }
 
+/*
+std::ostream &operator << (std::ostream &str, G3D::Vector2 const &point)
+{
+	return str << "Point x: " << point.x << " y: " << point.y;
+}*/
+
 #endif
