@@ -379,7 +379,23 @@ void MountainGen::Init(int seed)
 {
 	_msrandom(seed);
 }
-
+inline bool sort_vector3(const L_M_Point& obj1, const L_M_Point& obj2)
+{
+	if (obj1.v == obj2.v)
+		return false;
+	else if (&obj1 == &obj2)
+		return false;
+	LogFormat("cmpare ", "%f,%f,%f   to   %f,%f,%f",obj1.v.x,obj1.v.y,obj1.v.z,obj2.v.x,obj2.v.y,obj2.v.z);
+	if (obj1.v.x < obj2.v.x)
+		return true;
+	else if (obj1.v.y < obj2.v.y)
+		return true;
+	else if (obj1.v.z < obj2.v.z)
+		return true;
+	else
+		return false;
+	return obj1.v.x < obj2.v.x || obj1.v.y < obj2.v.y || obj1.v.z < obj2.v.z;
+}
 void MountainGen::Start()
 {
 	Init(time(nullptr));
@@ -412,6 +428,7 @@ void MountainGen::Start()
 			break;
 		}
 	}
+	std::sort(_mother.begin(), _mother.end(), sort_vector3);
 	for (auto m : _mother)
 	{
 		LogFormat("MountainGen_Ret", "idx %d,\t\tvector3(%.2f,\t\t%.2f,\t\t%.2f),\t\t\t\tvar %c", m.idx, m.v.x, m.v.y, m.v.z, m.z);
@@ -479,7 +496,7 @@ void MountainGen::GenVar(char v, size_t rpos)
 	_currentPoint.y = y;
 	_currentPoint.z = z;
 	Vector3 p3(x, y, z);
-	L_M_Point p = L_M_Point(v, rpos-1, std::move(p3));
+	L_M_Point p = L_M_Point(v, rpos - 1, std::move(p3));
 	_mother.push_back(p);
 }
 void MountainGen::GenRock()
